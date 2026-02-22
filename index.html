@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AcadLab IDE - Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="logo-box">
+            <div class="logo-icon">&lt;/&gt;</div>
+            <h1>AcadLab IDE</h1>
+            <p class="subtitle">Programming Laboratory Platform</p>
+        </div>
+
+        <div class="login-card">
+            <h2>Sign in</h2>
+            <p class="desc">Enter your credentials to access the lab</p>
+
+            <form id="loginForm">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="you@acadalab.edu" required>
+
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+
+        <div class="demo-card">
+            <p class="demo-title">Demo Accounts</p>
+            <div class="demo-buttons">
+                <button onclick="fillStudent()">🎓 Student</button>
+                <button onclick="fillFaculty()">👨‍🏫 Faculty</button>
+            </div>
+            <p class="demo-note">Click to auto-fill credentials, then sign in</p>
+        </div>
+
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
