@@ -1,0 +1,131 @@
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Logo */
+.logo-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo-icon {
+  width: 70px;
+  height: 70px;
+  background: #d1fae5;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-size: 28px;
+  color: #059669;
+  font-weight: bold;
+}
+
+.logo-section h1 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.logo-section p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Login Card */
+.login-card {
+  background: #ffffff;
+  width: 400px;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.login-card h2 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.login-card p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #10b981;
+}
+
+/* Button */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #10b981;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background: #059669;
+}
+
+/* Demo Section */
+.demo-card {
+  width: 400px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+}
+
+.demo-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.demo-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.demo-buttons button:hover {
+  background: #e5e7eb;
+}
+
+.demo-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #9ca3af;
+}
