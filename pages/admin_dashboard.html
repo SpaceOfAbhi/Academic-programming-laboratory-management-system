@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>AcadLab IDE - Admin Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <style>
+    /* Tab Styling */
+    .tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+    .tab {
+      padding: 8px 16px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .tab.active {
+      background: #e6f9f2;
+      color: #10b981;
+    }
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: block;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <div class="logo-icon">&lt;/&gt;</div>
+      <span class="logo-text">APLMS</span>
+    </div>
+
+    <div class="nav-right">
+      <span class="user-name"></span>
+      <span class="department">Administrator</span>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <h1 class="welcome">Admin Dashboard</h1>
+    <p class="subtitle">Manage labs and assign faculty</p>
+
+    <!-- STATS -->
+    <div class="stats faculty-stats">
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">📄</div>
+        <div>
+          <h2></h2>
+          <p>Total Labs</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-teal" style="background:#e0f2fe; color:#0ea5e9;">👨‍🎓</div>
+        <div>
+          <h2 id="totalClassesStat">0</h2>
+          <p>Total Classes</p>
+        </div>
+      </div>
+
+    </div>
+    
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" id="tabLabs">Labs</div>
+      <div class="tab" id="tabClasses">Classes</div>
+    </div>
+    
+    <!-- LABS VIEW -->
+    <div id="viewLabs" class="view-section active">
+      <div class="section-header">
+        <h3 class="section-title">All Labs</h3>
+        <button class="btn primary" id="createLabBtn">+ Create Lab</button>
+      </div>
+      <div id="adminLabContainer"></div>
+    </div>
+
+    <!-- CLASSES VIEW -->
+    <div id="viewClasses" class="view-section">
+      <div class="section-header">
+        <h3 class="section-title">All Classes</h3>
+        <button class="btn primary" id="createClassBtn">+ Create Class</button>
+      </div>
+      <div id="adminClassContainer"></div>
+    </div>
+
+  </div>
+
+  <div id="createLabModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
+      <h3>Create New Lab</h3>
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Lab Title</label>
+      <input type="text" id="labTitle" placeholder="Lab Title" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+
+      <label style="display:block; font-weight:500;">Target Class</label>
+      <select id="labClass" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+        <option value="">Select a Class...</option>
+      </select>
+
+      <label style="display:block; font-weight:500;">Assign Faculty</label>
+      <select id="facultySelect" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+        <option value="">Select a Faculty Member...</option>
+      </select>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="cancelLabBtn" class="btn secondary">Cancel</button>
+        <button id="saveLabBtn" class="btn primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="createClassModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:450px; max-height:85vh; display:flex; flex-direction:column;">
+      <h3>Create New Class</h3>
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Class Name</label>
+      <input type="text" id="classNameInput" placeholder="ex: CS101" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+
+      <label style="display:block; font-weight:500; margin-bottom:5px;">Add Students</label>
+      <input type="text" id="creationStudentSearch" placeholder="Search students..." style="width:100%; margin-bottom:10px; padding:8px; box-sizing: border-box; border:1px solid #ccc; border-radius:6px;">
+      
+      <div id="creationStudentsList" style="flex:1; overflow-y:auto; border:1px solid #f3f4f6; border-radius:8px; padding:10px; margin-bottom:20px;">
+        <!-- Student checkboxes populated here -->
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="cancelClassBtn" class="btn secondary">Cancel</button>
+        <button id="saveClassBtn" class="btn primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewStudentsModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:900;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:500px; max-height:80vh; display:flex; flex-direction:column;">
+      <h3 id="studentModalTitle" style="margin-bottom:15px;">Students in Class</h3>
+      
+      <input type="text" id="studentSearch" placeholder="Search students by name or email..." style="width:100%; margin-bottom:15px; padding:10px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;">
+
+      <div id="studentsList" style="flex:1; overflow-y:auto; padding-right:5px;">
+        <!-- Students will be dynamically populated here -->
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+        <button id="closeStudentsBtn" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="logoutModal"
+  style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+         justify-content:center; align-items:center; z-index:1000;">
+
+  <div style="background:#fff; padding:25px; border-radius:12px; width:350px; text-align:center;">
+    <h3 style="margin-bottom:10px;">Confirm Logout</h3>
+    <p style="margin-bottom:20px; color:#6b7280;">
+      Are you sure you want to logout?
+    </p>
+    <div style="display:flex; justify-content:center; gap:15px;">
+      <button id="cancelLogoutBtn" class="btn secondary">Cancel</button>
+      <button id="confirmLogoutBtn" class="btn primary">Logout</button>
+    </div>
+  </div>
+</div>
+
+  <script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs,
+  addDoc,
+  doc,
+  getDoc,
+  deleteDoc,
+  updateDoc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { 
+  getAuth, 
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
+  authDomain: "aplms-0001.firebaseapp.com",
+  projectId: "aplms-0001",
+  storageBucket: "aplms-0001.firebasestorage.app",
+  messagingSenderId: "848681094849",
+  appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* =========================
+   AUTH + ROLE PROTECTION
+========================= */
+
+onAuthStateChanged(auth, async (user) => {
+
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+
+  if (!userDoc.exists()) {
+    await signOut(auth);
+    window.location.href = "index.html";
+    return;
+  }
+
+  const userData = userDoc.data();
+
+  if (userData.role !== "admin") {
+    if (userData.role === "faculty") {
+        window.location.href = "faculty_dashboard.html";
+    } else {
+        window.location.href = "student_dashboard.html";
+    }
+    return;
+  }
+
+  document.querySelector(".user-name").innerText = userData.name || "Admin";
+
+  loadLabs();
+  loadFacultyOptions();
+  loadClassOptions();
+  loadClassesList();
+});
+
+/* =========================
+   TAB SWITCHING
+========================= */
+const tabLabs = document.getElementById("tabLabs");
+const tabClasses = document.getElementById("tabClasses");
+const viewLabs = document.getElementById("viewLabs");
+const viewClasses = document.getElementById("viewClasses");
+
+tabLabs.addEventListener("click", () => {
+  tabLabs.classList.add("active");
+  tabClasses.classList.remove("active");
+  viewLabs.classList.add("active");
+  viewClasses.classList.remove("active");
+});
+
+tabClasses.addEventListener("click", () => {
+  tabClasses.classList.add("active");
+  tabLabs.classList.remove("active");
+  viewClasses.classList.add("active");
+  viewLabs.classList.remove("active");
+});
+
+/* =========================
+   LOAD LABS
+========================= */
+
+async function loadLabs() {
+
+  const container = document.getElementById("adminLabContainer");
+  container.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "labs"));
+
+  let totalLabs = 0;
+
+  querySnapshot.forEach((docSnap) => {
+    totalLabs++;
+
+    const data = docSnap.data();
+
+    const div = document.createElement("div");
+    div.className = "lab-card";
+
+    div.innerHTML = `
+      <div class="lab-info">
+        <h4><strong>${data.title}</strong></h4>
+        <p class="lab-meta" style="margin-top:4px;">Assigned to: ${data.faculty_name || "Unassigned"} | Class: ${data.class || "Not set"}</p>
+      </div>
+
+      <div class="lab-actions">
+        <button class="btn secondary delete-lab-btn" data-id="${docSnap.id}">Delete</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
+  document.querySelector(".stat-card h2").innerText = totalLabs;
+
+  // Add event listeners for delete buttons
+  document.querySelectorAll(".delete-lab-btn").forEach(button => {
+    button.addEventListener("click", async (e) => {
+      const labId = e.target.getAttribute("data-id");
+      if(confirm("Are you sure you want to delete this lab? This cannot be undone.")) {
+        try {
+          await deleteDoc(doc(db, "labs", labId));
+          loadLabs(); // Refresh the list
+        } catch(error) {
+          alert("Error deleting lab: " + error.message);
+        }
+      }
+    });
+  });
+}
+
+/* =========================
+   LOAD FACULTY FOR DROPDOWN
+========================= */
+async function loadFacultyOptions() {
+    const facultySelect = document.getElementById("facultySelect");
+    
+    const q = query(collection(db, "users"), where("role", "==", "faculty"));
+    const querySnapshot = await getDocs(q);
+    
+    querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const option = document.createElement("option");
+        option.value = docSnap.id;
+        option.textContent = data.name || data.email;
+        option.dataset.name = data.name || data.email;
+        facultySelect.appendChild(option);
+    });
+}
+
+
+/* =========================
+   LOAD CLASSES FOR DROPDOWN
+========================= */
+async function loadClassOptions() {
+    const classSelect = document.getElementById("labClass");
+    
+    // Fallback: Default 'Select a Class...' is already in HTML. Just append new ones.
+    const querySnapshot = await getDocs(collection(db, "classes"));
+    
+    querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const option = document.createElement("option");
+        // Ensure "name" field or similar exists on the class document
+        const className = data.name || docSnap.id;
+        option.value = className;
+        option.textContent = className;
+        classSelect.appendChild(option);
+    });
+}
+
+
+
+
+/* =========================
+   CLASSES VIEW LOGIC
+========================= */
+
+async function loadClassesList() {
+  const container = document.getElementById("adminClassContainer");
+  container.innerHTML = "";
+
+  const querySnapshot = await getDocs(collection(db, "classes"));
+  let totalClasses = 0;
+
+  querySnapshot.forEach((docSnap) => {
+    totalClasses++;
+    const data = docSnap.data();
+    const className = data.name || docSnap.id;
+
+    const div = document.createElement("div");
+    div.className = "lab-card";
+
+    div.innerHTML = `
+      <div class="lab-info">
+        <h4><strong>${className}</strong></h4>
+      </div>
+      <div class="lab-actions">
+        <button class="btn primary view-students-btn" data-class="${className}">View Students</button>
+        <button class="btn secondary delete-class-btn" data-id="${docSnap.id}">Delete</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
+  document.getElementById("totalClassesStat").innerText = totalClasses;
+
+  // View Students Logic
+  document.querySelectorAll(".view-students-btn").forEach(button => {
+    button.addEventListener("click", (e) => {
+      const className = e.target.getAttribute("data-class");
+      openStudentsModal(className);
+    });
+  });
+
+  // Delete Class Logic
+  document.querySelectorAll(".delete-class-btn").forEach(button => {
+    button.addEventListener("click", async (e) => {
+      const classId = e.target.getAttribute("data-id");
+      if(confirm("Are you sure you want to delete this class?")) {
+        try {
+          await deleteDoc(doc(db, "classes", classId));
+          loadClassesList();
+          loadClassOptions(); // Refresh dropdown too
+        } catch(error) {
+          alert("Error: " + error.message);
+        }
+      }
+    });
+  });
+}
+
+// Create Class Modal Open/Close
+document.getElementById("createClassBtn").addEventListener("click", () => {
+  document.getElementById("createClassModal").style.display = "flex";
+  loadStudentsForCreation();
+});
+document.getElementById("cancelClassBtn").addEventListener("click", () => {
+  document.getElementById("createClassModal").style.display = "none";
+});
+
+// Load All Students for Creation Modal
+let creationAllStudents = [];
+async function loadStudentsForCreation() {
+  const container = document.getElementById("creationStudentsList");
+  container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
+  
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "student"));
+    const querySnapshot = await getDocs(q);
+    
+    creationAllStudents = [];
+    querySnapshot.forEach(docSnap => {
+      creationAllStudents.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    
+    renderCreationStudents(creationAllStudents);
+  } catch(error) {
+     container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
+  }
+}
+
+function renderCreationStudents(students) {
+  const container = document.getElementById("creationStudentsList");
+  container.innerHTML = "";
+  
+  students.forEach(student => {
+    const div = document.createElement("div");
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "10px";
+    div.style.padding = "5px 0";
+    div.style.borderBottom = "1px solid #f9fafb";
+    
+    div.innerHTML = `
+      <input type="checkbox" class="student-checkbox" value="${student.id}" id="chk-${student.id}">
+      <label for="chk-${student.id}" style="font-size:13px; cursor:pointer; flex:1;">
+        <div style="font-weight:500;">${student.name || "Unknown"}</div>
+        <div style="color:#6b7280; font-size:11px;">${student.email || "No email"}</div>
+      </label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Creation Modal Search
+document.getElementById("creationStudentSearch").addEventListener("keyup", (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const filtered = creationAllStudents.filter(s => 
+    (s.name || "").toLowerCase().includes(searchTerm) || 
+    (s.email || "").toLowerCase().includes(searchTerm)
+  );
+  renderCreationStudents(filtered);
+});
+
+// Save New Class
+document.getElementById("saveClassBtn").addEventListener("click", async () => {
+  const className = document.getElementById("classNameInput").value.trim();
+  if(!className) {
+    alert("Please enter a class name.");
+    return;
+  }
+
+  const selectedStudentIds = Array.from(document.querySelectorAll(".student-checkbox:checked"))
+    .map(cb => cb.value);
+
+  try {
+    // 1. Create Class Doc
+    const classRef = await addDoc(collection(db, "classes"), {
+      name: className,
+      created_at: new Date()
+    });
+    
+    // 2. Update Student Docs
+    const batchPromises = selectedStudentIds.map(id => 
+      updateDoc(doc(db, "users", id), { class: className })
+    );
+    await Promise.all(batchPromises);
+
+    document.getElementById("createClassModal").style.display = "none";
+    document.getElementById("classNameInput").value = "";
+    document.getElementById("creationStudentSearch").value = "";
+    
+    loadClassesList();
+    loadClassOptions();
+    alert(`Class "${className}" created and ${selectedStudentIds.length} students assigned!`);
+  } catch(error) {
+    alert("Error creating class: " + error.message);
+  }
+});
+
+/* =========================
+   STUDENT MODAL LOGIC
+========================= */
+let currentViewedStudents = [];
+
+async function openStudentsModal(className) {
+  document.getElementById("studentModalTitle").innerText = `Students in ${className}`;
+  document.getElementById("viewStudentsModal").style.display = "flex";
+  document.getElementById("studentSearch").value = ""; // Clear old search
+  
+  const container = document.getElementById("studentsList");
+  container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
+  
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "student"), where("class", "==", className));
+    const querySnapshot = await getDocs(q);
+    
+    currentViewedStudents = [];
+    querySnapshot.forEach(docSnap => {
+      currentViewedStudents.push(docSnap.data());
+    });
+    
+    renderStudentsList(currentViewedStudents);
+  } catch(error) {
+     container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
+  }
+}
+
+function renderStudentsList(studentsArray) {
+  const container = document.getElementById("studentsList");
+  container.innerHTML = "";
+  
+  if(studentsArray.length === 0) {
+    container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>No students found.</p>";
+    return;
+  }
+  
+  studentsArray.forEach(student => {
+    const div = document.createElement("div");
+    // Styling the list item similar to a tiny card
+    div.style.padding = "10px";
+    div.style.borderBottom = "1px solid #f3f4f6";
+    div.innerHTML = `
+      <div style="font-weight:500; font-size:14px;">${student.name || "Unknown"}</div>
+      <div style="color:#6b7280; font-size:12px;">${student.email || "No email"}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Live Search Filter
+document.getElementById("studentSearch").addEventListener("keyup", (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  
+  const filtered = currentViewedStudents.filter(student => {
+    const nameMatch = (student.name || "").toLowerCase().includes(searchTerm);
+    const emailMatch = (student.email || "").toLowerCase().includes(searchTerm);
+    return nameMatch || emailMatch;
+  });
+  
+  renderStudentsList(filtered);
+});
+
+// Close Student Modal
+document.getElementById("closeStudentsBtn").addEventListener("click", () => {
+  document.getElementById("viewStudentsModal").style.display = "none";
+});
+
+/* =========================
+   CREATE LAB MODAL LOGIC
+========================= */
+
+document.getElementById("createLabBtn").addEventListener("click", () => {
+  document.getElementById("createLabModal").style.display = "flex";
+});
+
+document.getElementById("cancelLabBtn").addEventListener("click", () => {
+  document.getElementById("createLabModal").style.display = "none";
+});
+
+document.getElementById("saveLabBtn").addEventListener("click", async () => {
+
+  const title = document.getElementById("labTitle").value;
+  const labClass = document.getElementById("labClass").value;
+  const facultyId = document.getElementById("facultySelect").value;
+
+  if (!title) {
+    alert("Enter lab title");
+    return;
+  }
+  
+  if (!labClass) {
+    alert("Enter target class");
+    return;
+  }
+  
+  if (!facultyId) {
+      alert("Please select a faculty member");
+      return;
+  }
+  
+  const facultyName = document.getElementById("facultySelect").options[document.getElementById("facultySelect").selectedIndex].dataset.name;
+
+  await addDoc(collection(db, "labs"), {
+    title: title,
+    class: labClass,
+    faculty_id: facultyId,
+    faculty_name: facultyName,
+    created_at: new Date()
+  });
+
+  document.getElementById("createLabModal").style.display = "none";
+  document.getElementById("labTitle").value = "";
+  document.getElementById("labClass").value = "";
+  document.getElementById("facultySelect").value = "";
+
+  loadLabs();
+});
+
+/* =========================
+   LOGOUT WITH CONFIRMATION
+========================= */
+
+// Open confirmation modal
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  document.getElementById("logoutModal").style.display = "flex";
+});
+
+// Cancel logout
+document.getElementById("cancelLogoutBtn").addEventListener("click", () => {
+  document.getElementById("logoutModal").style.display = "none";
+});
+
+// Confirm logout
+document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+});
+
+</script>
+
+</body>
+
+</html>

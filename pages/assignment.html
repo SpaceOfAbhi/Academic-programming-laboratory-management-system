@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment IDE - APLMS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CodeMirror CSS and JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #111827;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            text-decoration: none;
+            color: #111827;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #e6f9f2;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .primary {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .primary:hover {
+            background: #059669;
+        }
+
+        .secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* MAIN IDE LAYOUT */
+        .ide-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 70px);
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL: ASSIGNMENT INFO */
+        .problem-panel {
+            width: 350px;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            padding: 24px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .problem-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #111827;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            background: #e0f2fe;
+            color: #0ea5e9;
+            margin-bottom: 20px;
+        }
+
+        .problem-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4b5563;
+            margin-bottom: 25px;
+        }
+
+        /* RIGHT PANEL: EDITOR + TERMINAL */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e; /* Dark background for IDE feel */
+            min-width: 0;
+        }
+
+        .editor-header {
+            background: #252526;
+            color: #cccccc;
+            padding: 10px 20px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .editor-container {
+            flex: 6; /* 60% height */
+            position: relative;
+        }
+
+        /* CodeMirror Overrides */
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        .terminal-container {
+            flex: 4; /* 40% height */
+            background: #1e1e1e;
+            border-top: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            background: #252526;
+            color: #cccccc;
+            padding: 8px 15px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .terminal-actions button {
+            background: transparent;
+            border: 1px solid #555;
+            color: #ccc;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .terminal-actions button:hover {
+            background: #333;
+        }
+
+        .terminal-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .terminal-output {
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+
+        .terminal-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prompt {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="student_dashboard.html" class="logo">
+            <div class="logo-icon">&lt;/&gt;</div>
+            APLMS
+        </a>
+
+        <div class="nav-right">
+            <button id="runBtn" class="btn primary" style="background:#5b21b6;">
+                <span class="spinner" id="runSpinner"></span> 
+                Run
+            </button>
+            <button id="saveBtn" class="btn secondary">
+                <span class="spinner" id="saveSpinner"></span> 
+                Save
+            </button>
+            <button id="submitBtn" class="btn primary">
+                <span class="spinner" id="submitSpinner"></span> 
+                Submit
+            </button>
+            <button id="logoutBtn" class="btn secondary" style="background:transparent;">Logout</button>
+        </div>
+    </header>
+
+    <main class="ide-container">
+        <!-- LEFT PANEL: Info -->
+        <section class="problem-panel">
+            <div id="loadingInfo" style="color: #6b7280; font-size: 14px;">Loading assignment details...</div>
+            <div id="problemContent" style="display: none;">
+                <h1 id="assignmentTitle" class="problem-title">Assignment Title</h1>
+                <div id="assignmentLang" class="badge">Language</div>
+                
+                <h3 style="font-size: 15px; margin-bottom: 8px; color: #374151;">Description</h3>
+                <p id="assignmentDesc" class="problem-desc">
+                    Assignment description will appear here.
+                </p>
+                
+                <h3 style="font-size: 15px; margin-bottom: 8px; color: #374151;">Status</h3>
+                <p id="submissionStatus" style="font-size: 13px; color: #6b7280;">
+                    Not submitted yet.
+                </p>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Editor + Terminal -->
+        <section class="workspace">
+            <!-- Code Editor -->
+            <div class="editor-header">
+                <span id="editorFilename">main.js</span>
+            </div>
+            <div class="editor-container">
+                <textarea id="codeEditor"></textarea>
+            </div>
+
+            <!-- Terminal -->
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span>Terminal</span>
+                    <div class="terminal-actions">
+                        <button id="clearTermBtn">Clear</button>
+                    </div>
+                </div>
+                <div class="terminal-content" id="terminalArea">
+                    <div class="terminal-output" id="terminalOutput">Welcome to AcadLab Terminal.
+Type your commands or output here. Press Enter to simulate input.</div>
+                    <div class="terminal-input-wrapper">
+                        <span class="prompt">$</span>
+                        <input type="text" id="terminalInput" class="terminal-input" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast">Saved successfully!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
+            authDomain: "aplms-0001.firebaseapp.com",
+            projectId: "aplms-0001",
+            storageBucket: "aplms-0001.firebasestorage.app",
+            messagingSenderId: "848681094849",
+            appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State variables
+        let currentUser = null;
+        let assignmentId = null;
+        let editor = null;
+        let fullTerminalHistory = "Welcome to AcadLab Terminal.\nType your commands or output here. Press Enter to simulate input.\n";
+
+        // Initialize CodeMirror
+        editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+            lineNumbers: true,
+            mode: "javascript",
+            theme: "dracula",
+            indentUnit: 4,
+            matchBrackets: true,
+            autoCloseBrackets: true
+        });
+
+        // Parse URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        assignmentId = urlParams.get('id');
+
+        if (!assignmentId) {
+            alert("No assignment ID provided. Redirecting to dashboard.");
+            window.location.href = "student_dashboard.html";
+        }
+
+        // Terminal logic
+        const termInput = document.getElementById("terminalInput");
+        const termOutput = document.getElementById("terminalOutput");
+        const termArea = document.getElementById("terminalArea");
+
+        // Interactive Input Handling
+        termInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                const val = this.value;
+                if (val.trim() === "clear") {
+                    fullTerminalHistory = "";
+                    termOutput.innerText = "";
+                } else {
+                    // Record input in history
+                    fullTerminalHistory += val + "\n";
+                    termOutput.innerText = fullTerminalHistory;
+                }
+                this.value = "";
+                termArea.scrollTop = termArea.scrollHeight;
+            }
+        });
+
+        document.getElementById("clearTermBtn").addEventListener("click", () => {
+            fullTerminalHistory = "";
+            termOutput.innerText = "";
+            termInput.focus();
+        });
+
+        // Firebase Auth & Data Loading
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+                return;
+            }
+            currentUser = user;
+
+            try {
+                // Fetch Assignment Details
+                const assignDoc = await getDoc(doc(db, "assignments", assignmentId));
+                if (!assignDoc.exists()) {
+                    document.getElementById("loadingInfo").innerText = "Assignment not found.";
+                    return;
+                }
+                
+                const data = assignDoc.data();
+                document.getElementById("loadingInfo").style.display = "none";
+                document.getElementById("problemContent").style.display = "block";
+                
+                document.getElementById("assignmentTitle").innerText = data.title || "Untitled";
+                document.getElementById("assignmentLang").innerText = data.language || "Unknown Language";
+                document.getElementById("assignmentDesc").innerText = data.description || "No description.";
+
+                // Set IDE mode based on language
+                const lang = (data.language || "").toLowerCase();
+                let mode = "javascript";
+                let filename = "main.js";
+                if (lang.includes("python")) { mode = "python"; filename = "main.py"; }
+                else if (lang.includes("c++") || lang.includes("cpp")) { mode = "text/x-c++src"; filename = "main.cpp"; }
+                else if (lang.includes("c")) { mode = "text/x-csrc"; filename = "main.c"; }
+                else if (lang.includes("java")) { mode = "text/x-java"; filename = "Main.java"; }
+                
+                editor.setOption("mode", mode);
+                document.getElementById("editorFilename").innerText = filename;
+
+                // Load previous submission if exists
+                const subDoc = await getDoc(doc(db, "users", currentUser.uid, "submissions", assignmentId));
+                if (subDoc.exists()) {
+                    const subData = subDoc.data();
+                    if (subData.code) editor.setValue(subData.code);
+                    if (subData.terminalOutput) {
+                        fullTerminalHistory = subData.terminalOutput;
+                        termOutput.innerText = fullTerminalHistory;
+                    }
+                    const updated = subData.updatedAt ? subData.updatedAt.toDate().toLocaleString() : "Unknown date";
+                    if(subData.status === "submitted") {
+                        document.getElementById("submissionStatus").innerText = "Submitted on " + updated;
+                        document.getElementById("submissionStatus").style.color = "#10b981"; // Green
+                        document.getElementById("submitBtn").style.display = "none"; // Hide submit if already submitted
+                    } else {
+                        document.getElementById("submissionStatus").innerText = "Last saved: " + updated;
+                        document.getElementById("submissionStatus").style.color = "#f59e0b"; // Yellow-ish
+                    }
+                } else {
+                    // Set default starter code based on language
+                    let starter = "// Write your code here";
+                    if(mode === "python") starter = "# Write your code here";
+                    else if (mode.includes("c")) starter = "#include <stdio.h>\n\nint main() {\n    // Write code here\n    return 0;\n}";
+                    else if (mode === "text/x-java") starter = "public class Main {\n    public static void main(String[] args) {\n        // Write code here\n    }\n}";
+                    editor.setValue(starter);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById("loadingInfo").innerText = "Error loading assignment data.";
+            }
+        });
+
+        // Save Functionality (Draft)
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+            await handleSaving("in-progress", "saveBtn", "saveSpinner", "Saved temporarily!");
+        });
+
+        // Submit Functionality (Final)
+        document.getElementById("submitBtn").addEventListener("click", async () => {
+            if(confirm("Are you sure you want to completely submit? You might not be able to edit this later.")) {
+                await handleSaving("submitted", "submitBtn", "submitSpinner", "Submitted successfully!");
+            }
+        });
+
+        async function handleSaving(statusText, btnId, spinnerId, toastMsg) {
+            if (!currentUser || !assignmentId) return;
+            
+            const btn = document.getElementById(btnId);
+            const spinner = document.getElementById(spinnerId);
+            
+            btn.disabled = true;
+            spinner.style.display = "inline-block";
+
+            try {
+                const code = editor.getValue();
+                const termData = fullTerminalHistory;
+
+                // Save to users/{userId}/submissions/{assignmentId}
+                await setDoc(doc(db, "users", currentUser.uid, "submissions", assignmentId), {
+                    code: code,
+                    terminalOutput: termData,
+                    updatedAt: serverTimestamp(),
+                    status: statusText
+                }, { merge: true });
+
+                showToast(toastMsg);
+                
+                if(statusText === "submitted") {
+                    document.getElementById("submissionStatus").innerText = "Submitted on " + new Date().toLocaleString();
+                    document.getElementById("submissionStatus").style.color = "#10b981";
+                    document.getElementById("submitBtn").style.display = "none";
+                } else {
+                    document.getElementById("submissionStatus").innerText = "Last saved: " + new Date().toLocaleString();
+                    document.getElementById("submissionStatus").style.color = "#f59e0b";
+                }
+            } catch (error) {
+                console.error("Save error:", error);
+                showToast("Error saving submission.");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = "none";
+            }
+        }
+
+        // --- CODE EXECUTION (JUDGE0 API) ---
+
+        const JUDGE0_URL = "https://ce.judge0.com/submissions?base64_encoded=false&wait=true";
+        
+        // Map UI languages to Judge0 IDs
+        // Mapping based on ce.judge0.com/languages
+        const langMap = {
+            "javascript": 93, // Node.js 18.15.0
+            "python": 100,    // Python 3.12.5
+            "c": 103,         // C (GCC 14.1.0)
+            "c++": 105,       // C++ (GCC 14.1.0)
+            "cpp": 105,       // C++ (GCC 14.1.0)
+            "java": 91        // Java (JDK 17.0.6)
+        };
+
+        document.getElementById("runBtn").addEventListener("click", async () => {
+            const runBtn = document.getElementById("runBtn");
+            const runSpinner = document.getElementById("runSpinner");
+            const currentLangText = (document.getElementById("assignmentLang").innerText || "").toLowerCase();
+            
+            runBtn.disabled = true;
+            runSpinner.style.display = "inline-block";
+            
+            const code = editor.getValue();
+            const stdin = fullTerminalHistory;
+
+            try {
+                // Find matching Judge0 Language ID
+                let languageId = 93; // Default JS
+                for(let key in langMap) {
+                    if(currentLangText.includes(key)) {
+                        languageId = langMap[key];
+                        break;
+                    }
+                }
+
+                fullTerminalHistory += `\n[Running...]`;
+                termOutput.innerText = fullTerminalHistory;
+                termArea.scrollTop = termArea.scrollHeight;
+
+                const response = await fetch(JUDGE0_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source_code: code,
+                        language_id: languageId,
+                        stdin: pendingStdin // Send ONLY what was typed since last run
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Execution Service offline or error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Clear pending stdin after sending it
+                pendingStdin = "";
+
+                // Judge0 result format
+                if (result.stdout || result.stderr || result.compile_output || result.status) {
+                    const output = (result.stdout || "");
+                    const error = (result.stderr || "");
+                    const compileOutput = (result.compile_output || "");
+                    
+                    fullTerminalHistory += "\n"; // New line for program output
+                    if (compileOutput) fullTerminalHistory += "[Compiler Output]\n" + compileOutput + "\n";
+                    if (output) fullTerminalHistory += output;
+                    if (error) fullTerminalHistory += "[Error Output]\n" + error;
+                    
+                    if (!output && !error && !compileOutput) {
+                        fullTerminalHistory += `\nStatus: ${result.status.description}\n`;
+                    }
+                    
+                    termOutput.innerText = fullTerminalHistory;
+                    termArea.scrollTop = termArea.scrollHeight;
+                } else {
+                    throw new Error("Invalid response from execution service.");
+                }
+            } catch (error) {
+                console.error("Run error:", error);
+                fullTerminalHistory += `\n[Error]: ${error.message}\n`;
+                termOutput.innerText = fullTerminalHistory;
+                termArea.scrollTop = termArea.scrollHeight;
+            } finally {
+                runBtn.disabled = false;
+                runSpinner.style.display = "none";
+                termInput.focus();
+            }
+        });
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            if(confirm("Are you sure you want to logout?")) {
+                try {
+                    await signOut(auth);
+                    window.location.href = "login.html";
+                } catch (error) {
+                    console.error("Logout error:", error);
+                }
+            }
+        });
+        
+        // Ensure editor layout refreshes correctly
+        setTimeout(() => {
+            editor.refresh();
+        }, 100);
+    </script>
+</body>
+</html>

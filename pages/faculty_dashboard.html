@@ -68,26 +68,12 @@
     </div>
     <div class="section-header">
       <h3 class="section-title">Labs Under Supervision</h3>
-      <button class="btn primary" id="createLabBtn">+ Create Lab</button>
     </div>
     <div id="facultyLabContainer"></div>
 
 
   </div>
 
-  </div>
-  <div id="createLabModal"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
-      <h3>Create New Lab</h3>
-
-      <input type="text" id="labTitle" placeholder="Lab Title" style="width:100%; margin:15px 0; padding:8px;">
-
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
-        <button id="cancelLabBtn" class="btn secondary">Cancel</button>
-        <button id="saveLabBtn" class="btn primary">Create</button>
-      </div>
-    </div>
   </div>
 
   <div id="logoutModal"
@@ -113,9 +99,10 @@ import {
   getFirestore, 
   collection, 
   getDocs,
-  addDoc,
   doc,
-  getDoc
+  getDoc,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import { 
@@ -163,21 +150,22 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  document.querySelector(".user-name").innerText = userData.name;
+  document.querySelector(".user-name").innerText = userData.name || "Faculty";
 
-  loadLabs();
+  loadLabs(user.uid);
 });
 
 /* =========================
    LOAD LABS
 ========================= */
 
-async function loadLabs() {
+async function loadLabs(facultyId) {
 
   const container = document.getElementById("facultyLabContainer");
   container.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "labs"));
+  const q = query(collection(db, "labs"), where("faculty_id", "==", facultyId));
+  const querySnapshot = await getDocs(q);
 
   let activeLabs = 0;
 
@@ -205,37 +193,6 @@ async function loadLabs() {
   document.querySelector(".stat-card h2").innerText = activeLabs;
 }
 
-/* =========================
-   CREATE LAB MODAL LOGIC
-========================= */
-
-document.getElementById("createLabBtn").addEventListener("click", () => {
-  document.getElementById("createLabModal").style.display = "flex";
-});
-
-document.getElementById("cancelLabBtn").addEventListener("click", () => {
-  document.getElementById("createLabModal").style.display = "none";
-});
-
-document.getElementById("saveLabBtn").addEventListener("click", async () => {
-
-  const title = document.getElementById("labTitle").value;
-
-  if (!title) {
-    alert("Enter lab title");
-    return;
-  }
-
-  await addDoc(collection(db, "labs"), {
-    title: title,
-    created_at: new Date()
-  });
-
-  document.getElementById("createLabModal").style.display = "none";
-  document.getElementById("labTitle").value = "";
-
-  loadLabs();
-});
 
 /* =========================
    LOGOUT WITH CONFIRMATION

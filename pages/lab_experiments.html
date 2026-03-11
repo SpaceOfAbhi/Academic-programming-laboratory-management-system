@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Lab 3 - Experiments</title>
+<title>Lab Experiments</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/dashboard.css">
+<style>
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #10b981;
+    color: #10b981;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-outline:hover {
+    background: #ecfdf5;
+  }
+</style>
 
 </head>
 <body>
@@ -13,49 +28,245 @@
   <div class="logo">
     <div class="logo-icon">&lt;/&gt;</div>
     <span>AcadLab IDE</span>
-    <span class="breadcrumb">Faculty Dashboard > Lab 3: File I/O Operations</span>
+    <span class="breadcrumb" id="breadcrumbText">Faculty Dashboard > Loading...</span>
   </div>
 
   <div>
-    <span>Dr. Sarah Chen</span>
-    <a href="../index.html" class="logout-btn">Logout</a>
+    <span class="user-name" id="facultyName">Loading...</span>
+    <button id="logoutBtn" class="logout-btn" style="background:transparent; border:none; cursor:pointer;">Logout</button>
   </div>
 </header>
 
 <div class="container">
 
-  <h1>Lab 3: File I/O Operations</h1>
-  <p class="subtitle">Experiments</p>
-
-  <!-- Experiment 1 -->
-  <div class="lab-card">
-    <div class="lab-info">
-      <h4><strong>Experiment 1:</strong> File Reading</h4>
-      <p class="lab-meta">Total: 28 submissions</p>
-    </div>
-
-    <div class="lab-actions">
-      <span class="badge pending">8 pending</span>
-      <span class="badge evaluated">20 Evaluated</span>
-      <a href="lab-submissions.html" class="btn primary">Review →</a>
-    </div>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+          <h1 id="labTitleDisplay">Loading Lab...</h1>
+          <p class="subtitle" id="labClassDisplay">Experiments</p>
+      </div>
+      <button class="btn primary" id="createExpBtn" style="display:none;">+ Create Experiment</button>
   </div>
 
-  <!-- Experiment 2 -->
-  <div class="lab-card">
-    <div class="lab-info">
-      <h4><strong>Experiment 2:</strong> File Writing</h4>
-      <p class="lab-meta">Total: 28 submissions</p>
-    </div>
+  <div id="experimentsContainer">
+      <p style="color:#6b7280; margin-top: 20px;">Loading experiments...</p>
+  </div>
 
-    <div class="lab-actions">
-      <span class="badge pending">5 pending</span>
-      <span class="badge evaluated">23 Evaluated</span>
-      <a href="lab-submissions.html" class="btn primary">Review →</a>
+  <div id="createExpModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:1000;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:450px;">
+      <h3>Create New Experiment</h3>
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Title</label>
+      <input type="text" id="expTitle" placeholder="e.g. Recursion basics" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+
+      <label style="display:block; font-weight:500;">Question / Description</label>
+      <textarea id="expDesc" placeholder="Write a program to..." style="width:100%; height:80px; margin:8px 0 15px; padding:8px; box-sizing: border-box; resize:vertical;"></textarea>
+
+      <label style="display:block; font-weight:500;">Language</label>
+      <select id="expLang" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+        <option value="C">C</option>
+        <option value="C++">C++</option>
+        <option value="Java">Java</option>
+        <option value="Python">Python</option>
+        <option value="JavaScript">JavaScript</option>
+      </select>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="cancelExpBtn" class="btn secondary">Cancel</button>
+        <button id="saveExpBtn" class="btn primary">Create</button>
+      </div>
     </div>
   </div>
 
 </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs,
+  addDoc,
+  doc,
+  getDoc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { 
+  getAuth, 
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
+  authDomain: "aplms-0001.firebaseapp.com",
+  projectId: "aplms-0001",
+  storageBucket: "aplms-0001.firebasestorage.app",
+  messagingSenderId: "848681094849",
+  appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentLabId = null;
+let currentLabClass = null;
+let isFaculty = false;
+
+// 1. Check Auth
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (!userDoc.exists()) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  isFaculty = userDoc.data().role === "faculty";
+  
+  if(isFaculty) {
+      document.getElementById("facultyName").innerText = userDoc.data().name || "Faculty";
+      document.getElementById("createExpBtn").style.display = "block";
+  } else {
+      document.getElementById("facultyName").innerText = userDoc.data().name || "Student";
+  }
+
+  // Get Lab ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  currentLabId = urlParams.get('id');
+
+  if (!currentLabId) {
+    alert("No lab ID specified.");
+    window.location.href = isFaculty ? "faculty_dashboard.html" : "student_dashboard.html";
+    return;
+  }
+
+  loadLabDetails();
+});
+
+// 2. Load Lab Info
+async function loadLabDetails() {
+    try {
+        const labDoc = await getDoc(doc(db, "labs", currentLabId));
+        if (!labDoc.exists()) {
+            document.getElementById("labTitleDisplay").innerText = "Lab Not Found";
+            document.getElementById("experimentsContainer").innerHTML = "This lab does not exist.";
+            return;
+        }
+        
+        const data = labDoc.data();
+        currentLabClass = data.class;
+        
+        document.title = data.title + " - Experiments";
+        document.getElementById("breadcrumbText").innerText = `Dashboard > ${data.title}`;
+        document.getElementById("labTitleDisplay").innerText = data.title;
+        document.getElementById("labClassDisplay").innerText = `Target Class: ${data.class || 'Unknown'} | Faculty: ${data.faculty_name || '-'}`;
+        
+        loadExperiments();
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+// 3. Load Experiments
+async function loadExperiments() {
+    const container = document.getElementById("experimentsContainer");
+    container.innerHTML = "";
+    
+    try {
+        const q = query(collection(db, "assignments"), where("lab_id", "==", currentLabId));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            container.innerHTML = "<p style='color:#6b7280; margin-top:20px;'>No experiments added yet.</p>";
+            return;
+        }
+        
+        let counter = 1;
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const div = document.createElement("div");
+            div.className = "lab-card";
+            
+            // Faculty see "Review", students see "Solve"
+            const actionBtn = isFaculty ? 
+                `<button class="btn btn-outline" onclick="alert('Review coming soon')">Review →</button>` :
+                `<a href="assignment.html?id=${docSnap.id}" class="btn primary">Open IDE →</a>`;
+                
+            div.innerHTML = `
+            <div class="lab-info">
+              <h4 style="margin-bottom:8px;"><strong>Exp ${counter}:</strong> ${data.title}</h4>
+              <p class="lab-meta" style="margin-bottom:4px; font-size:14px;">${data.description}</p>
+              <p class="lab-meta" style="font-size:12px;">Language: ${data.language}</p>
+            </div>
+            
+            <div class="lab-actions">
+              ${actionBtn}
+            </div>
+            `;
+            container.appendChild(div);
+            counter++;
+        });
+    } catch(err) {
+        console.error(err);
+        container.innerHTML = "<p style='color:red;'>Error loading experiments.</p>";
+    }
+}
+
+// 4. Modal Logic
+document.getElementById("createExpBtn").addEventListener("click", () => {
+    document.getElementById("createExpModal").style.display = "flex";
+});
+
+document.getElementById("cancelExpBtn").addEventListener("click", () => {
+    document.getElementById("createExpModal").style.display = "none";
+});
+
+document.getElementById("saveExpBtn").addEventListener("click", async () => {
+    const title = document.getElementById("expTitle").value;
+    const desc = document.getElementById("expDesc").value;
+    const lang = document.getElementById("expLang").value;
+    
+    if(!title || !desc) {
+        alert("Please fill in both title and description.");
+        return;
+    }
+    
+    try {
+        await addDoc(collection(db, "assignments"), {
+            lab_id: currentLabId,
+            class: currentLabClass, // Saving target class for student filtering
+            title: title,
+            description: desc,
+            language: lang,
+            created_at: new Date()
+        });
+        
+        document.getElementById("createExpModal").style.display = "none";
+        document.getElementById("expTitle").value = "";
+        document.getElementById("expDesc").value = "";
+        
+        loadExperiments();
+    } catch(err) {
+        alert("Error saving experiment: " + err.message);
+    }
+});
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    if(confirm("Logout?")) {
+        await signOut(auth);
+        window.location.href = "index.html";
+    }
+});
+
+</script>
 
 </body>
 </html>
