@@ -78,73 +78,84 @@ ipcMain.handle('execute-code', async (event, { language, code, stdin }) => {
     }
 
     const filePath = path.join(folderPath, fileName);
-    fs.writeFileSync(filePath, code);
+    try {
+        fs.writeFileSync(filePath, code);
+    } catch (e) {
+        return { error: `Failed to write source file: ${e.message}` };
+    }
 
     return new Promise((resolve) => {
         let isFinalized = false;
+        
         const finalize = (result) => {
             if (isFinalized) return;
             isFinalized = true;
             activeProcess = null;
             
-            // Delayed cleanup to avoid EBUSY on Windows
+            // Non-blocking cleanup with longer delay to avoid EBUSY on Windows
             setTimeout(() => {
                 try {
                     if (fs.existsSync(folderPath)) {
-                        fs.rmSync(folderPath, { recursive: true, force: true });
+                        fs.rmSync(folderPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 1000 });
                     }
                 } catch (err) {
-                    console.error('Cleanup warning (non-fatal):', err.message);
+                    // Silently ignore cleanup errors to prevent process exit
                 }
-            }, 1000);
+            }, 5000);
             
             resolve(result);
         };
 
         const runExecution = () => {
-            const child = spawn(runCommand, {
-                shell: true,
-                cwd: folderPath,
-                stdio: ['pipe', 'pipe', 'pipe']
-            });
+            try {
+                const child = spawn(runCommand, {
+                    shell: true,
+                    cwd: folderPath,
+                    stdio: ['pipe', 'pipe', 'pipe']
+                });
 
-            activeProcess = child;
+                activeProcess = child;
 
-            let stdout = '';
-            let stderr = '';
+                let stdout = '';
+                let stderr = '';
 
-            if (stdin) {
-                child.stdin.write(stdin);
-            }
-
-            child.stdout.on('data', (data) => {
-                const chunk = data.toString();
-                stdout += chunk;
-                event.sender.send('terminal-out', chunk);
-            });
-
-            child.stderr.on('data', (data) => {
-                const chunk = data.toString();
-                stderr += chunk;
-                event.sender.send('terminal-err', chunk);
-            });
-
-            child.on('close', (exitCode) => {
-                finalize({ stdout, stderr, exitCode });
-            });
-
-            child.on('error', (err) => {
-                event.sender.send('terminal-err', `Execution Error: ${err.message}`);
-                finalize({ stdout, stderr: stderr + err.message, exitCode: 1 });
-            });
-
-            // 30 second timeout for interactive labs
-            setTimeout(() => {
-                if (activeProcess === child && !isFinalized) {
-                    child.kill('SIGKILL');
-                    finalize({ stdout, stderr: stderr + '\n[Execution Timed Out]', exitCode: 1 });
+                if (stdin) {
+                    try { child.stdin.write(stdin); } catch (e) {}
                 }
-            }, 30000);
+
+                child.stdout.on('data', (data) => {
+                    const chunk = data.toString();
+                    stdout += chunk;
+                    event.sender.send('terminal-out', chunk);
+                });
+
+                child.stderr.on('data', (data) => {
+                    const chunk = data.toString();
+                    stderr += chunk;
+                    event.sender.send('terminal-err', chunk);
+                });
+
+                child.on('close', (exitCode) => {
+                    finalize({ stdout, stderr, exitCode });
+                });
+
+                child.on('error', (err) => {
+                    event.sender.send('terminal-err', `Execution Error: ${err.message}`);
+                    finalize({ stdout, stderr: stderr + err.message, exitCode: 1 });
+                });
+
+                // 60 second timeout for long labs
+                setTimeout(() => {
+                    if (activeProcess === child && !isFinalized) {
+                        child.kill('SIGKILL');
+                        finalize({ stdout, stderr: stderr + '\n[Execution Timed Out]', exitCode: 1 });
+                    }
+                }, 60000);
+
+            } catch (spawnErr) {
+                event.sender.send('terminal-err', `Spawn Error: ${spawnErr.message}`);
+                finalize({ error: spawnErr.message, exitCode: 1 });
+            }
         };
 
         if (compileCommand) {
@@ -168,7 +179,7 @@ ipcMain.on('send-stdin', (event, text) => {
         try {
             activeProcess.stdin.write(text);
         } catch (e) {
-            console.error('Stdin write error:', e);
+            // Stdin write errors are usually due to process already closed
         }
     }
 });
