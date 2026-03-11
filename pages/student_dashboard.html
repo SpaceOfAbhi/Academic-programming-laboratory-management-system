@@ -369,11 +369,11 @@
         let querySnapshot;
 
         if (studentClass) {
-            const q = query(collection(db, "assignments"), where("class", "==", studentClass));
-            querySnapshot = await getDocs(q);
+          const q = query(collection(db, "assignments"), where("class", "==", studentClass));
+          querySnapshot = await getDocs(q);
         } else {
-            // Fallback to fetch all if student has no class defined
-            querySnapshot = await getDocs(collection(db, "assignments"));
+          // Fallback to fetch all if student has no class defined
+          querySnapshot = await getDocs(collection(db, "assignments"));
         }
 
         let totalLabs = 0;

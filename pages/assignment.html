@@ -384,7 +384,8 @@ Type your commands or output here. Press Enter to simulate input.</div>
         let currentUser = null;
         let assignmentId = null;
         let editor = null;
-        let fullTerminalHistory = "Welcome to AcadLab Terminal.\nType your commands or output here. Press Enter to simulate input.\n";
+        let fullTerminalHistory = "";
+        let pendingStdin = "";
 
         // Initialize CodeMirror
         editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
@@ -410,25 +411,44 @@ Type your commands or output here. Press Enter to simulate input.</div>
         const termOutput = document.getElementById("terminalOutput");
         const termArea = document.getElementById("terminalArea");
 
+        let isProgramRunning = false;
+
         // Interactive Input Handling
         termInput.addEventListener("keydown", function(e) {
             if (e.key === "Enter") {
                 const val = this.value;
-                if (val.trim() === "clear") {
+                if (val.trim().toLowerCase() === "clear") {
                     fullTerminalHistory = "";
-                    termOutput.innerText = "";
+                    pendingStdin = "";
+                    termOutput.innerText = "Terminal Cleared.\n";
                 } else {
                     // Record input in history
                     fullTerminalHistory += val + "\n";
+                    
+                    if (isProgramRunning) {
+                        // SEND TO ELECTRON IN REAL TIME
+                        if (window.electronAPI) {
+                            window.electronAPI.sendStdin(val + "\n");
+                        }
+                    } else {
+                        pendingStdin += val + "\n";
+                    }
+                    
                     termOutput.innerText = fullTerminalHistory;
                 }
                 this.value = "";
                 termArea.scrollTop = termArea.scrollHeight;
+                
+                // Keep focus on input if program is running
+                if (isProgramRunning) {
+                    this.focus();
+                }
             }
         });
 
         document.getElementById("clearTermBtn").addEventListener("click", () => {
             fullTerminalHistory = "";
+            pendingStdin = "";
             termOutput.innerText = "";
             termInput.focus();
         });
@@ -553,95 +573,90 @@ Type your commands or output here. Press Enter to simulate input.</div>
             }
         }
 
-        // --- CODE EXECUTION (JUDGE0 API) ---
+        // --- CODE EXECUTION (ELECTRON IPC) ---
 
-        const JUDGE0_URL = "https://ce.judge0.com/submissions?base64_encoded=false&wait=true";
-        
-        // Map UI languages to Judge0 IDs
-        // Mapping based on ce.judge0.com/languages
-        const langMap = {
-            "javascript": 93, // Node.js 18.15.0
-            "python": 100,    // Python 3.12.5
-            "c": 103,         // C (GCC 14.1.0)
-            "c++": 105,       // C++ (GCC 14.1.0)
-            "cpp": 105,       // C++ (GCC 14.1.0)
-            "java": 91        // Java (JDK 17.0.6)
-        };
+        const runBtn = document.getElementById("runBtn");
+        const runSpinner = document.getElementById("runSpinner");
 
-        document.getElementById("runBtn").addEventListener("click", async () => {
-            const runBtn = document.getElementById("runBtn");
-            const runSpinner = document.getElementById("runSpinner");
+        // Listen for real-time output from Electron
+        if (window.electronAPI) {
+            window.electronAPI.onTerminalOut((data) => {
+                fullTerminalHistory += data;
+                termOutput.innerText = fullTerminalHistory;
+                termArea.scrollTop = termArea.scrollHeight;
+            });
+
+            window.electronAPI.onTerminalErr((data) => {
+                fullTerminalHistory += data;
+                termOutput.innerText = fullTerminalHistory;
+                termArea.scrollTop = termArea.scrollHeight;
+            });
+        }
+
+        runBtn.addEventListener("click", async () => {
             const currentLangText = (document.getElementById("assignmentLang").innerText || "").toLowerCase();
             
             runBtn.disabled = true;
             runSpinner.style.display = "inline-block";
+            isProgramRunning = true; // START PROGRAM STATE
             
             const code = editor.getValue();
-            const stdin = fullTerminalHistory;
+
+            // Capture currently typed input
+            if (termInput.value.trim() !== "") {
+                const extra = termInput.value;
+                fullTerminalHistory += extra + "\n";
+                pendingStdin += extra + "\n";
+                termInput.value = "";
+            }
+
+            fullTerminalHistory += `\n[Executing natively...]\n`;
+            termOutput.innerText = fullTerminalHistory;
+            termArea.scrollTop = termArea.scrollHeight;
+            termInput.placeholder = "Type input for program here...";
+            termInput.focus();
 
             try {
-                // Find matching Judge0 Language ID
-                let languageId = 93; // Default JS
-                for(let key in langMap) {
-                    if(currentLangText.includes(key)) {
-                        languageId = langMap[key];
-                        break;
-                    }
+                if (!window.electronAPI) {
+                    throw new Error("Electron API not found. Please run via 'npm start'.");
                 }
 
-                fullTerminalHistory += `\n[Running...]`;
-                termOutput.innerText = fullTerminalHistory;
-                termArea.scrollTop = termArea.scrollHeight;
+                // Determine language
+                let language = "javascript";
+                if (currentLangText.includes("python")) language = "python";
+                else if (currentLangText.includes("c++") || currentLangText.includes("cpp")) language = "cpp";
+                else if (currentLangText.includes("java")) language = "java";
+                else if (currentLangText.includes("c") && !currentLangText.includes("+")) language = "c";
 
-                const response = await fetch(JUDGE0_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        source_code: code,
-                        language_id: languageId,
-                        stdin: pendingStdin // Send ONLY what was typed since last run
-                    })
+                const result = await window.electronAPI.runCode({
+                    language: language,
+                    code: code,
+                    stdin: pendingStdin
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Execution Service offline or error: ${response.status}`);
+                pendingStdin = ""; // Clear buffer after run
+
+                if (result.error) {
+                    throw new Error(result.error);
                 }
 
-                const result = await response.json();
-                
-                // Clear pending stdin after sending it
-                pendingStdin = "";
-
-                // Judge0 result format
-                if (result.stdout || result.stderr || result.compile_output || result.status) {
-                    const output = (result.stdout || "");
-                    const error = (result.stderr || "");
-                    const compileOutput = (result.compile_output || "");
-                    
-                    fullTerminalHistory += "\n"; // New line for program output
-                    if (compileOutput) fullTerminalHistory += "[Compiler Output]\n" + compileOutput + "\n";
-                    if (output) fullTerminalHistory += output;
-                    if (error) fullTerminalHistory += "[Error Output]\n" + error;
-                    
-                    if (!output && !error && !compileOutput) {
-                        fullTerminalHistory += `\nStatus: ${result.status.description}\n`;
-                    }
-                    
+                // Final status line if needed
+                if (result.exitCode !== undefined) {
+                    fullTerminalHistory += `\n[Process exited with code ${result.exitCode}]\n`;
                     termOutput.innerText = fullTerminalHistory;
-                    termArea.scrollTop = termArea.scrollHeight;
-                } else {
-                    throw new Error("Invalid response from execution service.");
                 }
+
             } catch (error) {
-                console.error("Run error:", error);
-                fullTerminalHistory += `\n[Error]: ${error.message}\n`;
+                console.error("Execution error:", error);
+                fullTerminalHistory += `\n[System Error]: ${error.message}\n`;
                 termOutput.innerText = fullTerminalHistory;
-                termArea.scrollTop = termArea.scrollHeight;
             } finally {
+                isProgramRunning = false; // END PROGRAM STATE
                 runBtn.disabled = false;
                 runSpinner.style.display = "none";
+                termInput.placeholder = "Type command here...";
                 termInput.focus();
+                termArea.scrollTop = termArea.scrollHeight;
             }
         });
 

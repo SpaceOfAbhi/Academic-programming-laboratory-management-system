@@ -1,0 +1,15 @@
+{
+  "name": "academic-programming-laboratory-management-system",
+  "version": "1.0.0",
+  "description": "APLMS with local code execution",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0"
+  }
+}
