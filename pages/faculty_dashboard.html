@@ -13,15 +13,9 @@
 <body>
 
   <header class="navbar">
-    <div style="display:flex; align-items:center; gap:20px;">
-      <a href="javascript:history.back()" class="btn secondary" style="padding: 6px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 5px; background: #f3f4f6; color: #374151; border-radius: 6px; font-weight: 500;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          Back
-      </a>
-      <div class="logo">
-        <div class="logo-icon">&lt;/&gt;</div>
-        <span class="logo-text">APLMS</span>
-      </div>
+    <div class="logo">
+      <div class="logo-icon">&lt;/&gt;</div>
+      <span class="logo-text">APLMS</span>
     </div>
 
     <div class="nav-right">
@@ -50,24 +44,8 @@
       <div class="stat-card">
         <div class="stat-icon icon-blue">📊</div>
         <div>
-          <h2>51</h2>
+          <h2 id="totalSubmissions">0</h2>
           <p>Total Submissions</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon icon-yellow">⏰</div>
-        <div>
-          <h2>17</h2>
-          <p>Pending Review</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon icon-teal">✔</div>
-        <div>
-          <h2>34</h2>
-          <p>Evaluated</p>
         </div>
       </div>
 
@@ -159,6 +137,7 @@ onAuthStateChanged(auth, async (user) => {
   document.querySelector(".user-name").innerText = userData.name || "Faculty";
 
   loadLabs(user.uid);
+  countSubmissions(user.uid);
 });
 
 /* =========================
@@ -199,6 +178,46 @@ async function loadLabs(facultyId) {
   document.querySelector(".stat-card h2").innerText = activeLabs;
 }
 
+/* =========================
+   COUNT SUBMISSIONS
+========================= */
+async function countSubmissions(facultyId) {
+    try {
+        // We need all labs by this faculty to find their assignments
+        const labQ = query(collection(db, "labs"), where("faculty_id", "==", facultyId));
+        const labSnap = await getDocs(labQ);
+        const labIds = labSnap.docs.map(d => d.id);
+
+        if (labIds.length === 0) return;
+
+        // Find all assignments for these labs
+        const assignQ = query(collection(db, "assignments"), where("lab_id", "in", labIds));
+        const assignSnap = await getDocs(assignQ);
+        const assignIds = assignSnap.docs.map(d => d.id);
+
+        if (assignIds.length === 0) return;
+
+        // Count all submissions for these assignments
+        // NOTE: Firestore 'in' query supports max 10-30 items depending on version.
+        // For a simple count, let's query the global 'submissions' collection
+        // But 'submissions' contains students ID + assign ID.
+        // We can query submissions where assignmentId is in the list.
+        
+        let total = 0;
+        // Batch queries of 10 if there are many assignments
+        for (let i = 0; i < assignIds.length; i += 10) {
+            const batch = assignIds.slice(i, i + 10);
+            const subQ = query(collection(db, "submissions"), where("assignmentId", "in", batch));
+            const subSnap = await getDocs(subQ);
+            total += subSnap.size;
+        }
+
+        document.getElementById("totalSubmissions").innerText = total;
+    } catch (err) {
+        console.error("Error counting submissions:", err);
+    }
+}
+
 
 /* =========================
    LOGOUT WITH CONFIRMATION
@@ -218,7 +237,7 @@ document.getElementById("cancelLogoutBtn").addEventListener("click", () => {
 document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
   try {
     await signOut(auth);
-    window.location.href = "index.html";
+    // Redirect handled by onAuthStateChanged
   } catch (error) {
     console.error("Logout error:", error);
   }

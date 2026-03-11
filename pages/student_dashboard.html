@@ -249,15 +249,9 @@
 <body>
 
   <header class="navbar">
-    <div style="display:flex; align-items:center; gap:20px;">
-      <a href="javascript:history.back()" class="btn secondary" style="padding: 6px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 5px; background: #f3f4f6; color: #374151; border-radius: 6px; font-weight: 500;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-          Back
-      </a>
-      <div class="logo">
-        <div class="logo-icon">&lt;/&gt;</div>
-        APLMS
-      </div>
+    <div class="logo">
+      <div class="logo-icon">&lt;/&gt;</div>
+      APLMS
     </div>
 
     <div class="nav-right">
@@ -341,14 +335,14 @@
 
         if (!user) {
           // Not logged in
-          window.location.href = "login.html";
+          window.location.href = "index.html";
           return;
         }
 
         const userDoc = await getDoc(doc(db, "users", user.uid));
 
         if (!userDoc.exists()) {
-          window.location.href = "login.html";
+          window.location.href = "index.html";
           return;
         }
 
@@ -378,27 +372,55 @@
           const q = query(collection(db, "assignments"), where("class", "==", studentClass));
           querySnapshot = await getDocs(q);
         } else {
-          // Fallback to fetch all if student has no class defined
           querySnapshot = await getDocs(collection(db, "assignments"));
         }
+
+        // Fetch user's submissions to check status
+        const subSnapshot = await getDocs(collection(db, "users", auth.currentUser.uid, "submissions"));
+        const subMap = {};
+        let submittedCount = 0;
+        let inProgressCount = 0;
+
+        subSnapshot.forEach(sDoc => {
+            const sData = sDoc.data();
+            subMap[sDoc.id] = sData.status;
+            if (sData.status === "submitted" || sData.status === "verified") submittedCount++;
+            else if (sData.status === "in-progress") inProgressCount++;
+        });
 
         let totalLabs = 0;
 
         querySnapshot.forEach((docSnap) => {
           totalLabs++;
           const data = docSnap.data();
+          const status = subMap[docSnap.id] || "not-started";
+          
+          let badgeHtml = "";
+          let cardClass = "lab-card";
+          
+          if (status === "verified") {
+              badgeHtml = `<span class="badge submitted">Verified ✔</span>`;
+              cardClass += " submitted-card";
+          } else if (status === "submitted") {
+              badgeHtml = `<span class="badge submitted">Submitted</span>`;
+              cardClass += " submitted-card";
+          } else if (status === "in-progress") {
+              badgeHtml = `<span class="badge in-progress">In Progress</span>`;
+          } else {
+              badgeHtml = `<span class="badge not-started">Not Started</span>`;
+          }
 
           const card = document.createElement("div");
-          card.className = "lab-card";
+          card.className = cardClass;
 
           card.innerHTML = `
             <div class="lab-info">
-                <h3>${data.title}</h3>
+                <h3>${data.title} ${badgeHtml}</h3>
                 <p>Language: ${data.language}</p>
                 <p>Description: ${data.description}</p>
             </div>
             <div class="lab-actions">
-                <button class="btn primary">Open IDE →</button>
+                <button class="btn primary">${status === "verified" ? "View Code →" : "Open IDE →"}</button>
             </div>
         `;
 
@@ -409,7 +431,11 @@
           labContainer.appendChild(card);
         });
 
-        document.querySelector(".stat-number").innerText = totalLabs;
+        // Update stats
+        const statNumbers = document.querySelectorAll(".stat-number");
+        statNumbers[0].innerText = totalLabs;
+        statNumbers[1].innerText = inProgressCount;
+        statNumbers[2].innerText = submittedCount;
       }
 
       // Open confirmation modal
@@ -426,7 +452,7 @@
       document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
         try {
           await signOut(auth);
-          window.location.href = "index.html";
+          // Redirect handled by onAuthStateChanged
         } catch (error) {
           console.error("Logout error:", error);
         }

@@ -311,7 +311,7 @@
                 <span class="spinner" id="submitSpinner"></span> 
                 Submit
             </button>
-            <button id="logoutBtn" class="btn secondary" style="background:transparent;">Logout</button>
+            <button id="logoutBtn" class="btn secondary" style="background: #fee2e2; color: #dc2626;">Logout</button>
         </div>
     </header>
 
@@ -388,7 +388,9 @@ Type your commands or output here. Press Enter to simulate input.</div>
 
         // State variables
         let currentUser = null;
+        let studentName = "Unknown Student";
         let assignmentId = null;
+        let assignmentTitle = "";
         let editor = null;
         let fullTerminalHistory = "";
         let pendingStdin = "";
@@ -462,12 +464,17 @@ Type your commands or output here. Press Enter to simulate input.</div>
         // Firebase Auth & Data Loading
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = "login.html";
+                window.location.href = "index.html";
                 return;
             }
             currentUser = user;
-
             try {
+                // Fetch User Details for submission metadata
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    studentName = userDoc.data().name || "Unknown Student";
+                }
+
                 // Fetch Assignment Details
                 const assignDoc = await getDoc(doc(db, "assignments", assignmentId));
                 if (!assignDoc.exists()) {
@@ -476,6 +483,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 }
                 
                 const data = assignDoc.data();
+                assignmentTitle = data.title;
                 document.getElementById("loadingInfo").style.display = "none";
                 document.getElementById("problemContent").style.display = "block";
                 
@@ -552,13 +560,23 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 const code = editor.getValue();
                 const termData = fullTerminalHistory;
 
-                // Save to users/{userId}/submissions/{assignmentId}
-                await setDoc(doc(db, "users", currentUser.uid, "submissions", assignmentId), {
+                const submissionData = {
+                    studentId: currentUser.uid,
+                    studentName: studentName,
+                    assignmentId: assignmentId,
+                    assignmentTitle: assignmentTitle,
                     code: code,
                     terminalOutput: termData,
                     updatedAt: serverTimestamp(),
                     status: statusText
-                }, { merge: true });
+                };
+
+                // 1. Save to student's private area
+                await setDoc(doc(db, "users", currentUser.uid, "submissions", assignmentId), submissionData, { merge: true });
+
+                // 2. Save/Update in centralized submissions collection for faculty review
+                // Use a composite ID to ensure one submission per student per assignment
+                await setDoc(doc(db, "submissions", `${currentUser.uid}_${assignmentId}`), submissionData, { merge: true });
 
                 showToast(toastMsg);
                 
@@ -681,7 +699,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
             if(confirm("Are you sure you want to logout?")) {
                 try {
                     await signOut(auth);
-                    window.location.href = "login.html";
+                    // Redirect is handled by onAuthStateChanged listener
                 } catch (error) {
                     console.error("Logout error:", error);
                 }

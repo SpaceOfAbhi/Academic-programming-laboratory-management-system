@@ -36,7 +36,7 @@
 
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -52,40 +52,70 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Debugging
+    window.onerror = (msg, url, line) => {
+        console.error("Global Error:", msg, "at", url, ":", line);
+    };
+
+    let isRedirecting = false;
+
+    // Proactive Redirect if already logged in
+    onAuthStateChanged(auth, async (user) => {
+        console.log("Auth state changed:", user ? "User detected" : "No user");
+        
+        if (user) {
+            if (isRedirecting) return;
+            isRedirecting = true;
+            
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const role = userDoc.data().role;
+                    console.log("Redirecting to", role, "dashboard...");
+                    if (role === "student") window.location.href = "student_dashboard.html";
+                    else if (role === "faculty") window.location.href = "faculty_dashboard.html";
+                    else if (role === "admin") window.location.href = "admin_dashboard.html";
+                } else {
+                    console.warn("User record missing in Firestore");
+                    isRedirecting = false;
+                }
+            } catch (err) {
+                console.error("Redirect check failed:", err);
+                isRedirecting = false;
+            }
+        } else {
+            // RESET UI state if logged out
+            isRedirecting = false;
+            const btn = document.querySelector("#loginForm button");
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "Sign In";
+            }
+        }
+    });
+
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (isRedirecting) return;
+
+        const btn = e.target.querySelector('button');
+        const originalText = btn.innerText;
+        
+        btn.innerText = "Signing in...";
+        btn.disabled = true;
 
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
 
         try {
-            // 1️⃣ Authenticate
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // 2️⃣ Fetch role from Firestore
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-
-            if (!userDoc.exists()) {
-                alert("User record not found in Firestore.");
-                return;
-            }
-
-            const role = userDoc.data().role;
-
-            // 3️⃣ Redirect based on role
-            if (role === "student") {
-                window.location.href = "student_dashboard.html";
-            } else if (role === "faculty") {
-                window.location.href = "faculty_dashboard.html";
-            } else if (role === "admin") {
-                window.location.href = "admin_dashboard.html";
-            } else {
-                alert("Invalid role assigned.");
-            }
-
+            console.log("Login successful, waiting for redirect...");
+            // onAuthStateChanged will handle the redirect
         } catch (error) {
-            alert(error.message);
+            console.error("Login failed:", error.message);
+            alert("Login failed: " + error.message);
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
     });
 </script>
