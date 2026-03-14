@@ -7,7 +7,7 @@
     <title>Assignment IDE - APLMS</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- CodeMirror CSS and JS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
@@ -125,7 +125,7 @@
             margin-bottom: 15px;
             color: #111827;
         }
-        
+
         .badge {
             display: inline-block;
             padding: 4px 10px;
@@ -149,7 +149,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #1e1e1e; /* Dark background for IDE feel */
+            background: #1e1e1e;
+            /* Dark background for IDE feel */
             min-width: 0;
         }
 
@@ -165,7 +166,8 @@
         }
 
         .editor-container {
-            flex: 6; /* 60% height */
+            flex: 6;
+            /* 60% height */
             position: relative;
         }
 
@@ -177,7 +179,8 @@
         }
 
         .terminal-container {
-            flex: 4; /* 40% height */
+            flex: 4;
+            /* 40% height */
             background: #1e1e1e;
             border-top: 1px solid #333;
             display: flex;
@@ -194,7 +197,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .terminal-actions button {
             background: transparent;
             border: 1px solid #555;
@@ -217,6 +220,27 @@
             color: #d4d4d4;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 13px;
+            /* Remove smooth scroll to make jumping to bottom instantaneous */
+            scroll-behavior: auto;
+        }
+
+        /* Custom Scrollbar for Terminal - Enhanced Visibility */
+        .terminal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .terminal-content::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 5px;
+            border: 2px solid #1e1e1e;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb:hover {
+            background: #666;
         }
 
         .terminal-output {
@@ -254,7 +278,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s ease;
@@ -265,12 +289,12 @@
             transform: translateY(0);
             opacity: 1;
         }
-        
+
         .spinner {
             display: none;
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
@@ -279,7 +303,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -288,8 +314,13 @@
 
     <header class="navbar">
         <div style="display:flex; align-items:center; gap:20px;">
-            <a href="javascript:history.back()" class="btn secondary" style="padding: 6px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 5px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <a href="javascript:history.back()" class="btn secondary"
+                style="padding: 6px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
                 Back
             </a>
             <a href="student_dashboard.html" class="logo">
@@ -300,15 +331,15 @@
 
         <div class="nav-right">
             <button id="runBtn" class="btn primary" style="background:#5b21b6;">
-                <span class="spinner" id="runSpinner"></span> 
+                <span class="spinner" id="runSpinner"></span>
                 Run
             </button>
             <button id="saveBtn" class="btn secondary">
-                <span class="spinner" id="saveSpinner"></span> 
+                <span class="spinner" id="saveSpinner"></span>
                 Save
             </button>
             <button id="submitBtn" class="btn primary">
-                <span class="spinner" id="submitSpinner"></span> 
+                <span class="spinner" id="submitSpinner"></span>
                 Submit
             </button>
             <button id="logoutBtn" class="btn secondary" style="background: #fee2e2; color: #dc2626;">Logout</button>
@@ -322,12 +353,12 @@
             <div id="problemContent" style="display: none;">
                 <h1 id="assignmentTitle" class="problem-title">Assignment Title</h1>
                 <div id="assignmentLang" class="badge">Language</div>
-                
+
                 <h3 style="font-size: 15px; margin-bottom: 8px; color: #374151;">Description</h3>
                 <p id="assignmentDesc" class="problem-desc">
                     Assignment description will appear here.
                 </p>
-                
+
                 <h3 style="font-size: 15px; margin-bottom: 8px; color: #374151;">Status</h3>
                 <p id="submissionStatus" style="font-size: 13px; color: #6b7280;">
                     Not submitted yet.
@@ -355,10 +386,11 @@
                 </div>
                 <div class="terminal-content" id="terminalArea">
                     <div class="terminal-output" id="terminalOutput">Welcome to AcadLab Terminal.
-Type your commands or output here. Press Enter to simulate input.</div>
+                        Type your commands or output here. Press Enter to simulate input.</div>
                     <div class="terminal-input-wrapper">
                         <span class="prompt">$</span>
-                        <input type="text" id="terminalInput" class="terminal-input" autocomplete="off" spellcheck="false" autofocus>
+                        <input type="text" id="terminalInput" class="terminal-input" autocomplete="off"
+                            spellcheck="false" autofocus>
                     </div>
                 </div>
             </div>
@@ -405,6 +437,38 @@ Type your commands or output here. Press Enter to simulate input.</div>
             autoCloseBrackets: true
         });
 
+        // Security: Refined Anti-Paste (Allow internal, block external)
+        let lastInternalCopy = "";
+
+        const normalizeText = (text) => text ? text.replace(/\r/g, "").trim() : "";
+
+        // Track internal copy/cut operations
+        const trackInternal = () => {
+            const selectedText = editor.getSelection();
+            if (selectedText) {
+                lastInternalCopy = normalizeText(selectedText);
+            }
+        };
+
+        editor.on("copy", trackInternal);
+        editor.on("cut", trackInternal);
+
+        editor.on("paste", (cm, e) => {
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const normalizedPasted = normalizeText(pastedText);
+            
+            // Allow if it matches the last thing copied in this window (normalized)
+            if (normalizedPasted && (normalizedPasted === lastInternalCopy)) {
+                return; // Let it proceed
+            }
+            
+            e.preventDefault();
+            showToast("Pasting from external sources is blocked. Please type manually.");
+            
+            // Ensure editor regains focus
+            setTimeout(() => editor.focus(), 10);
+        });
+
         // Parse URL params
         const urlParams = new URLSearchParams(window.location.search);
         assignmentId = urlParams.get('id');
@@ -422,7 +486,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
         let isProgramRunning = false;
 
         // Interactive Input Handling
-        termInput.addEventListener("keydown", function(e) {
+        termInput.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 const val = this.value;
                 if (val.trim().toLowerCase() === "clear") {
@@ -432,7 +496,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 } else {
                     // Record input in history
                     fullTerminalHistory += val + "\n";
-                    
+
                     if (isProgramRunning) {
                         // SEND TO ELECTRON IN REAL TIME
                         if (window.electronAPI) {
@@ -441,12 +505,12 @@ Type your commands or output here. Press Enter to simulate input.</div>
                     } else {
                         pendingStdin += val + "\n";
                     }
-                    
+
                     termOutput.innerText = fullTerminalHistory;
                 }
                 this.value = "";
                 termArea.scrollTop = termArea.scrollHeight;
-                
+
                 // Keep focus on input if program is running
                 if (isProgramRunning) {
                     this.focus();
@@ -481,12 +545,12 @@ Type your commands or output here. Press Enter to simulate input.</div>
                     document.getElementById("loadingInfo").innerText = "Assignment not found.";
                     return;
                 }
-                
+
                 const data = assignDoc.data();
                 assignmentTitle = data.title;
                 document.getElementById("loadingInfo").style.display = "none";
                 document.getElementById("problemContent").style.display = "block";
-                
+
                 document.getElementById("assignmentTitle").innerText = data.title || "Untitled";
                 document.getElementById("assignmentLang").innerText = data.language || "Unknown Language";
                 document.getElementById("assignmentDesc").innerText = data.description || "No description.";
@@ -499,7 +563,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 else if (lang.includes("c++") || lang.includes("cpp")) { mode = "text/x-c++src"; filename = "main.cpp"; }
                 else if (lang.includes("c")) { mode = "text/x-csrc"; filename = "main.c"; }
                 else if (lang.includes("java")) { mode = "text/x-java"; filename = "Main.java"; }
-                
+
                 editor.setOption("mode", mode);
                 document.getElementById("editorFilename").innerText = filename;
 
@@ -513,7 +577,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
                         termOutput.innerText = fullTerminalHistory;
                     }
                     const updated = subData.updatedAt ? subData.updatedAt.toDate().toLocaleString() : "Unknown date";
-                    if(subData.status === "submitted") {
+                    if (subData.status === "submitted") {
                         document.getElementById("submissionStatus").innerText = "Submitted on " + updated;
                         document.getElementById("submissionStatus").style.color = "#10b981"; // Green
                         document.getElementById("submitBtn").style.display = "none"; // Hide submit if already submitted
@@ -524,7 +588,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 } else {
                     // Set default starter code based on language
                     let starter = "// Write your code here";
-                    if(mode === "python") starter = "# Write your code here";
+                    if (mode === "python") starter = "# Write your code here";
                     else if (mode.includes("c")) starter = "#include <stdio.h>\n\nint main() {\n    // Write code here\n    return 0;\n}";
                     else if (mode === "text/x-java") starter = "public class Main {\n    public static void main(String[] args) {\n        // Write code here\n    }\n}";
                     editor.setValue(starter);
@@ -542,17 +606,17 @@ Type your commands or output here. Press Enter to simulate input.</div>
 
         // Submit Functionality (Final)
         document.getElementById("submitBtn").addEventListener("click", async () => {
-            if(confirm("Are you sure you want to completely submit? You might not be able to edit this later.")) {
+            if (confirm("Are you sure you want to completely submit? You might not be able to edit this later.")) {
                 await handleSaving("submitted", "submitBtn", "submitSpinner", "Submitted successfully!");
             }
         });
 
         async function handleSaving(statusText, btnId, spinnerId, toastMsg) {
             if (!currentUser || !assignmentId) return;
-            
+
             const btn = document.getElementById(btnId);
             const spinner = document.getElementById(spinnerId);
-            
+
             btn.disabled = true;
             spinner.style.display = "inline-block";
 
@@ -579,8 +643,8 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 await setDoc(doc(db, "submissions", `${currentUser.uid}_${assignmentId}`), submissionData, { merge: true });
 
                 showToast(toastMsg);
-                
-                if(statusText === "submitted") {
+
+                if (statusText === "submitted") {
                     document.getElementById("submissionStatus").innerText = "Submitted on " + new Date().toLocaleString();
                     document.getElementById("submissionStatus").style.color = "#10b981";
                     document.getElementById("submitBtn").style.display = "none";
@@ -604,26 +668,50 @@ Type your commands or output here. Press Enter to simulate input.</div>
 
         // Listen for real-time output from Electron
         if (window.electronAPI) {
+            let pendingOutput = "";
+            let updateScheduled = false;
+
+            const updateTerminal = () => {
+                if (pendingOutput) {
+                    const isAtBottom = termArea.scrollHeight - termArea.clientHeight <= termArea.scrollTop + 30;
+                    
+                    const textNode = document.createTextNode(pendingOutput);
+                    termOutput.appendChild(textNode);
+                    
+                    if (isAtBottom) {
+                        termArea.scrollTop = termArea.scrollHeight;
+                    }
+                    pendingOutput = "";
+                }
+                updateScheduled = false;
+            };
+
             window.electronAPI.onTerminalOut((data) => {
                 fullTerminalHistory += data;
-                termOutput.innerText = fullTerminalHistory;
-                termArea.scrollTop = termArea.scrollHeight;
+                pendingOutput += data;
+                if (!updateScheduled) {
+                    updateScheduled = true;
+                    requestAnimationFrame(updateTerminal);
+                }
             });
 
             window.electronAPI.onTerminalErr((data) => {
                 fullTerminalHistory += data;
-                termOutput.innerText = fullTerminalHistory;
-                termArea.scrollTop = termArea.scrollHeight;
+                pendingOutput += data;
+                if (!updateScheduled) {
+                    updateScheduled = true;
+                    requestAnimationFrame(updateTerminal);
+                }
             });
         }
 
         runBtn.addEventListener("click", async () => {
             const currentLangText = (document.getElementById("assignmentLang").innerText || "").toLowerCase();
-            
+
             runBtn.disabled = true;
             runSpinner.style.display = "inline-block";
             isProgramRunning = true; // START PROGRAM STATE
-            
+
             const code = editor.getValue();
 
             // Capture currently typed input
@@ -634,8 +722,8 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 termInput.value = "";
             }
 
-            fullTerminalHistory += `\n[Executing natively...]\n`;
-            termOutput.innerText = fullTerminalHistory;
+            const statusNode = document.createTextNode(`\n[Executing natively...]\n`);
+            termOutput.appendChild(statusNode);
             termArea.scrollTop = termArea.scrollHeight;
             termInput.placeholder = "Type input for program here...";
             termInput.focus();
@@ -666,14 +754,16 @@ Type your commands or output here. Press Enter to simulate input.</div>
 
                 // Final status line if needed
                 if (result.exitCode !== undefined) {
+                    const exitNode = document.createTextNode(`\n[Process exited with code ${result.exitCode}]\n`);
                     fullTerminalHistory += `\n[Process exited with code ${result.exitCode}]\n`;
-                    termOutput.innerText = fullTerminalHistory;
+                    termOutput.appendChild(exitNode);
                 }
 
             } catch (error) {
                 console.error("Execution error:", error);
+                const errNode = document.createTextNode(`\n[System Error]: ${error.message}\n`);
                 fullTerminalHistory += `\n[System Error]: ${error.message}\n`;
-                termOutput.innerText = fullTerminalHistory;
+                termOutput.appendChild(errNode);
             } finally {
                 isProgramRunning = false; // END PROGRAM STATE
                 runBtn.disabled = false;
@@ -696,7 +786,7 @@ Type your commands or output here. Press Enter to simulate input.</div>
 
         // Logout
         document.getElementById("logoutBtn").addEventListener("click", async () => {
-            if(confirm("Are you sure you want to logout?")) {
+            if (confirm("Are you sure you want to logout?")) {
                 try {
                     await signOut(auth);
                     // Redirect is handled by onAuthStateChanged listener
@@ -705,11 +795,12 @@ Type your commands or output here. Press Enter to simulate input.</div>
                 }
             }
         });
-        
+
         // Ensure editor layout refreshes correctly
         setTimeout(() => {
             editor.refresh();
         }, 100);
     </script>
 </body>
+
 </html>

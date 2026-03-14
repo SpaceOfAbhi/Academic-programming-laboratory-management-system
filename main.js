@@ -1,8 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const fsPromises = fs.promises;
 const { spawn, exec } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
+
+// Optimization: Disable hardware acceleration as it can cause freezes on some Windows GPUs
+app.disableHardwareAcceleration();
 
 let mainWindow;
 
@@ -20,15 +24,23 @@ function createWindow() {
     mainWindow.loadFile('pages/index.html');
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+    await ensureTempDir();
+    createWindow();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
 
 const TEMP_DIR = path.join(app.getAppPath(), 'temp_runs');
-if (!fs.existsSync(TEMP_DIR)) {
-    fs.mkdirSync(TEMP_DIR, { recursive: true });
+
+async function ensureTempDir() {
+    try {
+        await fsPromises.mkdir(TEMP_DIR, { recursive: true });
+    } catch (e) {
+        // Directory might already exist
+    }
 }
 
 // Track active child processes
@@ -37,7 +49,9 @@ let activeProcess = null;
 ipcMain.handle('execute-code', async (event, { language, code, stdin }) => {
     // Kill any existing process before starting a new one
     if (activeProcess) {
-        try { activeProcess.kill('SIGKILL'); } catch (e) {}
+        try { 
+            activeProcess.kill('SIGKILL'); 
+        } catch (e) {}
         activeProcess = null;
     }
 
@@ -45,79 +59,101 @@ ipcMain.handle('execute-code', async (event, { language, code, stdin }) => {
     const folderPath = path.join(TEMP_DIR, runId);
     
     try {
-        fs.mkdirSync(folderPath, { recursive: true });
+        await fsPromises.mkdir(folderPath, { recursive: true });
     } catch (e) {
         return { error: `Failed to create temp directory: ${e.message}` };
     }
 
     let fileName = '';
-    let runCommand = '';
+    let baseCommand = '';
+    let commandArgs = [];
     let compileCommand = '';
 
     const langLower = language.toLowerCase();
     if (langLower.includes('python')) {
         fileName = 'program.py';
-        runCommand = `python -u ${fileName}`;
+        baseCommand = 'python';
+        commandArgs = ['-u', fileName];
     } else if (langLower.includes('cpp') || langLower.includes('c++')) {
         fileName = 'program.cpp';
         compileCommand = `g++ ${fileName} -o program`;
-        runCommand = process.platform === 'win32' ? 'program.exe' : './program';
+        baseCommand = process.platform === 'win32' ? path.join(folderPath, 'program.exe') : './program';
     } else if (langLower.includes('java')) {
         fileName = 'Program.java';
         compileCommand = `javac ${fileName}`;
-        runCommand = `java Program`;
+        baseCommand = 'java';
+        commandArgs = ['Program'];
     } else if (langLower === 'c') {
         fileName = 'program.c';
         compileCommand = `gcc ${fileName} -o program`;
-        runCommand = process.platform === 'win32' ? 'program.exe' : './program';
+        baseCommand = process.platform === 'win32' ? path.join(folderPath, 'program.exe') : './program';
     } else if (langLower.includes('js') || langLower.includes('node')) {
         fileName = 'program.js';
-        runCommand = `node ${fileName}`;
+        baseCommand = 'node';
+        commandArgs = [fileName];
     } else {
         return { error: `Unsupported language: ${language}` };
     }
 
     const filePath = path.join(folderPath, fileName);
     try {
-        fs.writeFileSync(filePath, code);
+        await fsPromises.writeFile(filePath, code);
     } catch (e) {
         return { error: `Failed to write source file: ${e.message}` };
     }
 
     return new Promise((resolve) => {
         let isFinalized = false;
-        
-        const finalize = (result) => {
+        let stdoutBuffer = "";
+        let stderrBuffer = "";
+        let flushInterval = null;
+
+        const flushBuffers = () => {
+            if (stdoutBuffer) {
+                event.sender.send('terminal-out', stdoutBuffer);
+                stdoutBuffer = "";
+            }
+            if (stderrBuffer) {
+                event.sender.send('terminal-err', stderrBuffer);
+                stderrBuffer = "";
+            }
+        };
+
+        const finalize = async (result) => {
             if (isFinalized) return;
             isFinalized = true;
             activeProcess = null;
-            
-            // Non-blocking cleanup with longer delay to avoid EBUSY on Windows
-            setTimeout(() => {
+
+            if (flushInterval) clearInterval(flushInterval);
+            flushBuffers(); // Final flush
+
+            // Asynchronous cleanup
+            setTimeout(async () => {
                 try {
-                    if (fs.existsSync(folderPath)) {
-                        fs.rmSync(folderPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 1000 });
+                    const stats = await fsPromises.stat(folderPath).catch(() => null);
+                    if (stats && stats.isDirectory()) {
+                        await fsPromises.rm(folderPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 1000 });
                     }
-                } catch (err) {
-                    // Silently ignore cleanup errors to prevent process exit
-                }
-            }, 5000);
+                } catch (err) { /* ignore */ }
+            }, 3000);
             
             resolve(result);
         };
 
+        // Start flushing buffers every 50ms to prevent IPC flooding
+        flushInterval = setInterval(flushBuffers, 50);
+
         const runExecution = () => {
             try {
-                const child = spawn(runCommand, {
-                    shell: true,
+                const child = spawn(baseCommand, commandArgs, {
                     cwd: folderPath,
                     stdio: ['pipe', 'pipe', 'pipe']
                 });
 
                 activeProcess = child;
 
-                let stdout = '';
-                let stderr = '';
+                let stdoutAccumulator = '';
+                let stderrAccumulator = '';
 
                 if (stdin) {
                     try { child.stdin.write(stdin); } catch (e) {}
@@ -125,35 +161,33 @@ ipcMain.handle('execute-code', async (event, { language, code, stdin }) => {
 
                 child.stdout.on('data', (data) => {
                     const chunk = data.toString();
-                    stdout += chunk;
-                    event.sender.send('terminal-out', chunk);
+                    stdoutAccumulator += chunk;
+                    stdoutBuffer += chunk; // For throttled IPC
                 });
 
                 child.stderr.on('data', (data) => {
                     const chunk = data.toString();
-                    stderr += chunk;
-                    event.sender.send('terminal-err', chunk);
+                    stderrAccumulator += chunk;
+                    stderrBuffer += chunk; // For throttled IPC
                 });
 
                 child.on('close', (exitCode) => {
-                    finalize({ stdout, stderr, exitCode });
+                    finalize({ stdout: stdoutAccumulator, stderr: stderrAccumulator, exitCode });
                 });
 
                 child.on('error', (err) => {
-                    event.sender.send('terminal-err', `Execution Error: ${err.message}`);
-                    finalize({ stdout, stderr: stderr + err.message, exitCode: 1 });
+                    finalize({ stdout: stdoutAccumulator, stderr: stderrAccumulator + `\nExecution Error: ${err.message}`, exitCode: 1 });
                 });
 
-                // 60 second timeout for long labs
+                // 60 second timeout
                 setTimeout(() => {
                     if (activeProcess === child && !isFinalized) {
                         child.kill('SIGKILL');
-                        finalize({ stdout, stderr: stderr + '\n[Execution Timed Out]', exitCode: 1 });
+                        finalize({ stdout: stdoutAccumulator, stderr: stderrAccumulator + '\n[Execution Timed Out]', exitCode: 1 });
                     }
                 }, 60000);
 
             } catch (spawnErr) {
-                event.sender.send('terminal-err', `Spawn Error: ${spawnErr.message}`);
                 finalize({ error: spawnErr.message, exitCode: 1 });
             }
         };
@@ -162,7 +196,7 @@ ipcMain.handle('execute-code', async (event, { language, code, stdin }) => {
             exec(compileCommand, { cwd: folderPath }, (error, stdout, stderr) => {
                 if (error) {
                     const errMsg = stderr || error.message;
-                    event.sender.send('terminal-err', `[Compilation Error]\n${errMsg}`);
+                    event.sender.send('terminal-err', `[Compilation Error]\n${errMsg}\n`);
                     finalize({ compile_output: errMsg, exitCode: 1 });
                 } else {
                     runExecution();
@@ -178,8 +212,6 @@ ipcMain.on('send-stdin', (event, text) => {
     if (activeProcess && activeProcess.stdin && activeProcess.stdin.writable) {
         try {
             activeProcess.stdin.write(text);
-        } catch (e) {
-            // Stdin write errors are usually due to process already closed
-        }
+        } catch (e) {}
     }
 });

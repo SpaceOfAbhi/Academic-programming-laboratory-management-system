@@ -366,13 +366,57 @@
         const labContainer = document.getElementById("labContainer");
         labContainer.innerHTML = "";
 
-        let querySnapshot;
+        let assignmentsMap = new Map();
 
-        if (studentClass) {
-          const q = query(collection(db, "assignments"), where("class", "==", studentClass));
-          querySnapshot = await getDocs(q);
-        } else {
-          querySnapshot = await getDocs(collection(db, "assignments"));
+        try {
+            if (studentClass && studentClass.trim() !== "") {
+                const trimmedClass = studentClass.trim();
+                
+                // 1. DIRECT QUERY: Assignments linked directly to class
+                const directQ = query(collection(db, "assignments"), where("class", "==", trimmedClass));
+                const directSnapshot = await getDocs(directQ);
+                directSnapshot.forEach(doc => {
+                    assignmentsMap.set(doc.id, { id: doc.id, ...doc.data() });
+                });
+
+                // 2. LAYERED QUERY: Find labs for this class, then their assignments
+                const labsQ = query(collection(db, "labs"), where("class", "==", trimmedClass));
+                const labsSnapshot = await getDocs(labsQ);
+                const labIds = labsSnapshot.docs.map(doc => doc.id);
+
+                if (labIds.length > 0) {
+                    for (let i = 0; i < labIds.length; i += 10) {
+                        const batch = labIds.slice(i, i + 10);
+                        const aq = query(collection(db, "assignments"), where("lab_id", "in", batch));
+                        const aSnapshot = await getDocs(aq);
+                        aSnapshot.forEach(doc => {
+                            if (!assignmentsMap.has(doc.id)) {
+                                assignmentsMap.set(doc.id, { id: doc.id, ...doc.data() });
+                            }
+                        });
+                    }
+                }
+            } else {
+                // Fallback for students without class or empty class
+                const querySnapshot = await getDocs(collection(db, "assignments"));
+                querySnapshot.forEach(doc => {
+                    assignmentsMap.set(doc.id, { id: doc.id, ...doc.data() });
+                });
+            }
+        } catch (err) {
+            console.error("Error loading experiments:", err);
+            labContainer.innerHTML = `<p style="color:red; margin-top:20px;">Error loading experiments: ${err.message}</p>`;
+            return;
+        }
+
+        const assignments = Array.from(assignmentsMap.values());
+
+        if (assignments.length === 0) {
+            labContainer.innerHTML = `<p style="color:#6b7280; margin-top:20px;">No experiments found for your class. Please contact your faculty.</p>`;
+            // Update stats to 0
+            const statNumbers = document.querySelectorAll(".stat-number");
+            statNumbers.forEach(n => n.innerText = "0");
+            return;
         }
 
         // Fetch user's submissions to check status
@@ -390,10 +434,9 @@
 
         let totalLabs = 0;
 
-        querySnapshot.forEach((docSnap) => {
+        assignments.forEach((assign) => {
           totalLabs++;
-          const data = docSnap.data();
-          const status = subMap[docSnap.id] || "not-started";
+          const status = subMap[assign.id] || "not-started";
           
           let badgeHtml = "";
           let cardClass = "lab-card";
@@ -415,9 +458,9 @@
 
           card.innerHTML = `
             <div class="lab-info">
-                <h3>${data.title} ${badgeHtml}</h3>
-                <p>Language: ${data.language}</p>
-                <p>Description: ${data.description}</p>
+                <h3>${assign.title} ${badgeHtml}</h3>
+                <p>Language: ${assign.language}</p>
+                <p>Description: ${assign.description}</p>
             </div>
             <div class="lab-actions">
                 <button class="btn primary">${status === "verified" ? "View Code →" : "Open IDE →"}</button>
@@ -425,7 +468,7 @@
         `;
 
           card.querySelector("button").addEventListener("click", () => {
-            window.location.href = `assignment.html?id=${docSnap.id}`;
+            window.location.href = `assignment.html?id=${assign.id}`;
           });
 
           labContainer.appendChild(card);
