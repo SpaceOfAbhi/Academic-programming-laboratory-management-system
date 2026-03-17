@@ -83,6 +83,8 @@
     <div class="tabs">
       <div class="tab active" id="tabLabs">Labs</div>
       <div class="tab" id="tabClasses">Classes</div>
+      <div class="tab" id="tabFaculty">Faculty</div>
+      <div class="tab" id="tabStudents">Students</div>
     </div>
     
     <!-- LABS VIEW -->
@@ -101,6 +103,24 @@
         <button class="btn primary" id="createClassBtn">+ Create Class</button>
       </div>
       <div id="adminClassContainer"></div>
+    </div>
+
+    <!-- FACULTY VIEW -->
+    <div id="viewFaculty" class="view-section">
+      <div class="section-header">
+        <h3 class="section-title">Faculty Members</h3>
+        <button class="btn primary" id="addFacultyBtn">+ Add Faculty</button>
+      </div>
+      <div id="adminFacultyContainer"></div>
+    </div>
+
+    <!-- STUDENTS VIEW -->
+    <div id="viewStudents" class="view-section">
+      <div class="section-header">
+        <h3 class="section-title">All Students</h3>
+        <button class="btn primary" id="addStudentBtn">+ Add Student</button>
+      </div>
+      <div id="adminStudentContainer"></div>
     </div>
 
   </div>
@@ -170,20 +190,50 @@
   </div>
 
   <div id="logoutModal"
-  style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
-         justify-content:center; align-items:center; z-index:1000;">
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+           justify-content:center; align-items:center; z-index:1000;">
 
-  <div style="background:#fff; padding:25px; border-radius:12px; width:350px; text-align:center;">
-    <h3 style="margin-bottom:10px;">Confirm Logout</h3>
-    <p style="margin-bottom:20px; color:#6b7280;">
-      Are you sure you want to logout?
-    </p>
-    <div style="display:flex; justify-content:center; gap:15px;">
-      <button id="cancelLogoutBtn" class="btn secondary">Cancel</button>
-      <button id="confirmLogoutBtn" class="btn primary">Logout</button>
+    <div style="background:#fff; padding:25px; border-radius:12px; width:350px; text-align:center;">
+      <h3 style="margin-bottom:10px;">Confirm Logout</h3>
+      <p style="margin-bottom:20px; color:#6b7280;">
+        Are you sure you want to logout?
+      </p>
+      <div style="display:flex; justify-content:center; gap:15px;">
+        <button id="cancelLogoutBtn" class="btn secondary">Cancel</button>
+        <button id="confirmLogoutBtn" class="btn primary">Logout</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <div id="addFacultyModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:1001;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
+      <h3>Add New Faculty</h3>
+      <label style="display:block; margin-top:15px; font-weight:500;">Full Name</label>
+      <input type="text" id="facultyNameInput" placeholder="ex: Prof. John Doe" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <label style="display:block; font-weight:500;">Department</label>
+      <input type="text" id="facultyDeptInput" placeholder="ex: Computer Science" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="cancelAddFacultyBtn" class="btn secondary">Cancel</button>
+        <button id="saveFacultyBtn" class="btn primary">Add Faculty</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addStudentModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:1001;">
+    <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
+      <h3>Add New Student</h3>
+      <label style="display:block; margin-top:15px; font-weight:500;">Full Name</label>
+      <input type="text" id="studentNameInput" placeholder="ex: Jane Smith" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <label style="display:block; font-weight:500;">Email Address</label>
+      <input type="email" id="studentEmailInput" placeholder="jane.smith@example.com" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="cancelAddStudentBtn" class="btn secondary">Cancel</button>
+        <button id="saveStudentBtn" class="btn primary">Add Student</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
 
@@ -256,6 +306,8 @@ onAuthStateChanged(auth, async (user) => {
   loadFacultyOptions();
   loadClassOptions();
   loadClassesList();
+  loadFacultyList();
+  loadStudentsList();
 });
 
 /* =========================
@@ -263,22 +315,28 @@ onAuthStateChanged(auth, async (user) => {
 ========================= */
 const tabLabs = document.getElementById("tabLabs");
 const tabClasses = document.getElementById("tabClasses");
+const tabFaculty = document.getElementById("tabFaculty");
+const tabStudents = document.getElementById("tabStudents");
+
 const viewLabs = document.getElementById("viewLabs");
 const viewClasses = document.getElementById("viewClasses");
+const viewFaculty = document.getElementById("viewFaculty");
+const viewStudents = document.getElementById("viewStudents");
 
-tabLabs.addEventListener("click", () => {
-  tabLabs.classList.add("active");
-  tabClasses.classList.remove("active");
-  viewLabs.classList.add("active");
-  viewClasses.classList.remove("active");
-});
+const allTabs = [tabLabs, tabClasses, tabFaculty, tabStudents];
+const allViews = [viewLabs, viewClasses, viewFaculty, viewStudents];
 
-tabClasses.addEventListener("click", () => {
-  tabClasses.classList.add("active");
-  tabLabs.classList.remove("active");
-  viewClasses.classList.add("active");
-  viewLabs.classList.remove("active");
-});
+function switchTab(targetTab, targetView) {
+  allTabs.forEach(t => t.classList.remove("active"));
+  allViews.forEach(v => v.classList.remove("active"));
+  targetTab.classList.add("active");
+  targetView.classList.add("active");
+}
+
+tabLabs.addEventListener("click", () => switchTab(tabLabs, viewLabs));
+tabClasses.addEventListener("click", () => switchTab(tabClasses, viewClasses));
+tabFaculty.addEventListener("click", () => switchTab(tabFaculty, viewFaculty));
+tabStudents.addEventListener("click", () => switchTab(tabStudents, viewStudents));
 
 /* =========================
    LOAD LABS
@@ -601,6 +659,159 @@ document.getElementById("studentSearch").addEventListener("keyup", (e) => {
 document.getElementById("closeStudentsBtn").addEventListener("click", () => {
   document.getElementById("viewStudentsModal").style.display = "none";
 });
+
+/* =========================
+   FACULTY LIST LOGIC
+========================= */
+async function loadFacultyList() {
+  const container = document.getElementById("adminFacultyContainer");
+  container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading faculty...</p>";
+
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "faculty"));
+    const querySnapshot = await getDocs(q);
+    container.innerHTML = "";
+
+    if (querySnapshot.empty) {
+      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No faculty members found.</p>";
+      return;
+    }
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const div = document.createElement("div");
+      div.className = "lab-card";
+      div.innerHTML = `
+        <div class="lab-info">
+          <h4><strong>${data.name || "Unnamed Faculty"}</strong></h4>
+          <p class="lab-meta">Department: ${data.department || "General"}</p>
+        </div>
+        <div class="lab-actions">
+          <button class="btn secondary delete-user-btn" data-id="${docSnap.id}">Remove</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    handleDeleteUserEvents("faculty");
+  } catch (error) {
+    container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
+  }
+}
+
+// Modal open/close
+document.getElementById("addFacultyBtn").addEventListener("click", () => {
+  document.getElementById("addFacultyModal").style.display = "flex";
+});
+document.getElementById("cancelAddFacultyBtn").addEventListener("click", () => {
+  document.getElementById("addFacultyModal").style.display = "none";
+});
+
+// Save Faculty
+document.getElementById("saveFacultyBtn").addEventListener("click", async () => {
+  const name = document.getElementById("facultyNameInput").value.trim();
+  const dept = document.getElementById("facultyDeptInput").value.trim();
+
+  if (!name || !dept) { alert("Please fill all fields."); return; }
+
+  try {
+    await addDoc(collection(db, "users"), {
+      name: name,
+      department: dept,
+      role: "faculty",
+      createdAt: new Date()
+    });
+    document.getElementById("addFacultyModal").style.display = "none";
+    document.getElementById("facultyNameInput").value = "";
+    document.getElementById("facultyDeptInput").value = "";
+    loadFacultyList();
+    loadFacultyOptions(); // Update lab faculty dropdown too
+  } catch (error) { alert("Error: " + error.message); }
+});
+
+
+/* =========================
+   STUDENTS LIST LOGIC
+========================= */
+async function loadStudentsList() {
+  const container = document.getElementById("adminStudentContainer");
+  container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading students...</p>";
+
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "student"));
+    const querySnapshot = await getDocs(q);
+    container.innerHTML = "";
+
+    if (querySnapshot.empty) {
+      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No students found.</p>";
+      return;
+    }
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const div = document.createElement("div");
+      div.className = "lab-card";
+      div.innerHTML = `
+        <div class="lab-info">
+          <h4><strong>${data.name || "Unknown"}</strong></h4>
+          <p class="lab-meta">${data.email || "No email"} | Class: ${data.class || "Unassigned"}</p>
+        </div>
+        <div class="lab-actions">
+          <button class="btn secondary delete-user-btn" data-id="${docSnap.id}">Remove</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+
+    handleDeleteUserEvents("student");
+  } catch (error) {
+    container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
+  }
+}
+
+// Modal open/close
+document.getElementById("addStudentBtn").addEventListener("click", () => {
+  document.getElementById("addStudentModal").style.display = "flex";
+});
+document.getElementById("cancelAddStudentBtn").addEventListener("click", () => {
+  document.getElementById("addStudentModal").style.display = "none";
+});
+
+// Save Student
+document.getElementById("saveStudentBtn").addEventListener("click", async () => {
+  const name = document.getElementById("studentNameInput").value.trim();
+  const email = document.getElementById("studentEmailInput").value.trim();
+
+  if (!name || !email) { alert("Please fill all fields."); return; }
+
+  try {
+    await addDoc(collection(db, "users"), {
+      name: name,
+      email: email,
+      role: "student",
+      createdAt: new Date()
+    });
+    document.getElementById("addStudentModal").style.display = "none";
+    document.getElementById("studentNameInput").value = "";
+    document.getElementById("studentEmailInput").value = "";
+    loadStudentsList();
+  } catch (error) { alert("Error: " + error.message); }
+});
+
+function handleDeleteUserEvents(type) {
+  document.querySelectorAll(".delete-user-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const id = e.target.dataset.id;
+      if (confirm(`Are you sure you want to remove this ${type}?`)) {
+        try {
+          await deleteDoc(doc(db, "users", id));
+          if (type === "faculty") { loadFacultyList(); loadFacultyOptions(); }
+          else loadStudentsList();
+        } catch (error) { alert("Error: " + error.message); }
+      }
+    });
+  });
+}
 
 /* =========================
    CREATE LAB MODAL LOGIC
