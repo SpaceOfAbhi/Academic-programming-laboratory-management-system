@@ -215,3 +215,87 @@ ipcMain.on('send-stdin', (event, text) => {
         } catch (e) {}
     }
 });
+
+// ─── Groq API handler (main process — no CORS/CSP restrictions) ───
+const https = require('https');
+
+function groqRequest(apiKey, model, body) {
+    return new Promise((resolve) => {
+        const options = {
+            hostname: 'api.groq.com',
+            path: '/openai/v1/chat/completions',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+                resolve({ statusCode: res.statusCode, body: data });
+            });
+        });
+
+        req.on('error', (e) => resolve({ statusCode: 0, body: '', networkError: e.message }));
+        req.write(body);
+        req.end();
+    });
+}
+
+// Groq models to try
+const GROQ_MODELS = [
+    'llama-3.1-70b-versatile',
+    'llama-3.3-70b-versatile',
+    'llama3-70b-8192',
+    'mixtral-8x7b-32768'
+];
+
+ipcMain.handle('call-ai', async (event, { apiKey, prompt }) => {
+    const bodyStr = JSON.stringify({
+        model: GROQ_MODELS[0], // Will be updated in loop
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 1000,
+        response_format: { type: 'json_object' }
+    });
+
+    for (const model of GROQ_MODELS) {
+        // Try each model with a retry for rate limits
+        for (let attempt = 0; attempt < 1; attempt++) {
+            const currentBody = JSON.parse(bodyStr);
+            currentBody.model = model;
+            const body = JSON.stringify(currentBody);
+
+            const result = await groqRequest(apiKey, model, body);
+
+            if (result.networkError) {
+                return { error: 'Network error: ' + result.networkError };
+            }
+
+            if (result.statusCode === 200) {
+                try {
+                    const parsed = JSON.parse(result.body);
+                    return { text: parsed.choices[0].message.content };
+                } catch (e) {
+                    return { error: 'Failed to parse response: ' + e.message };
+                }
+            }
+
+            if (result.statusCode === 429) {
+                console.log(`[Groq] ${model} rate limited, trying next...`);
+                event.sender.send('ai-status', `Rate limited on ${model}. Trying next model...`);
+                break; // Try next model immediately for better responsiveness
+            }
+
+            if (result.statusCode !== 200) {
+                console.log(`[Groq] ${model} error ${result.statusCode}: ${result.body}`);
+            }
+        }
+    }
+
+    return { error: 'AI evaluation failed on all available models. Please check your API key or try again later.' };
+});
