@@ -360,6 +360,7 @@
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
+            min-height: 0;
         }
 
         .CodeMirror {
@@ -374,6 +375,27 @@
             font-size: 13px;
             overflow-y: auto;
             white-space: pre-wrap;
+            min-height: 0; /* Essential for flex-based scrolling */
+            scroll-behavior: auto;
+        }
+
+        /* ── TERMINAL SCROLLBAR ── */
+        .terminal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .terminal-content::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+            border: 2px solid #1e1e1e;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb:hover {
+            background: #444;
         }
 
         /* ── VERIFY BUTTONS ── */
