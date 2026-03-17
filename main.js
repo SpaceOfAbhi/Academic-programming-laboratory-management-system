@@ -248,10 +248,10 @@ function groqRequest(apiKey, model, body) {
 
 // Groq models to try
 const GROQ_MODELS = [
-    'llama-3.1-70b-versatile',
     'llama-3.3-70b-versatile',
-    'llama3-70b-8192',
-    'mixtral-8x7b-32768'
+    'llama-3.1-8b-instant',
+    'mixtral-8x7b-32768',
+    'gemma2-9b-it'
 ];
 
 ipcMain.handle('call-ai', async (event, { apiKey, prompt }) => {

@@ -16,6 +16,7 @@
       border-bottom: 1px solid #e5e7eb;
       padding-bottom: 10px;
     }
+
     .tab {
       padding: 8px 16px;
       font-size: 15px;
@@ -24,13 +25,16 @@
       cursor: pointer;
       border-radius: 8px;
     }
+
     .tab.active {
       background: #e6f9f2;
       color: #10b981;
     }
+
     .view-section {
       display: none;
     }
+
     .view-section.active {
       display: block;
     }
@@ -78,7 +82,7 @@
       </div>
 
     </div>
-    
+
     <!-- TABS -->
     <div class="tabs">
       <div class="tab active" id="tabLabs">Labs</div>
@@ -86,7 +90,7 @@
       <div class="tab" id="tabFaculty">Faculty</div>
       <div class="tab" id="tabStudents">Students</div>
     </div>
-    
+
     <!-- LABS VIEW -->
     <div id="viewLabs" class="view-section active">
       <div class="section-header">
@@ -131,7 +135,8 @@
       <h3>Create New Lab</h3>
 
       <label style="display:block; margin-top:15px; font-weight:500;">Lab Title</label>
-      <input type="text" id="labTitle" placeholder="Lab Title" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <input type="text" id="labTitle" placeholder="Lab Title"
+        style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
 
       <label style="display:block; font-weight:500;">Target Class</label>
       <select id="labClass" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
@@ -152,16 +157,20 @@
 
   <div id="createClassModal"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:25px; border-radius:12px; width:450px; max-height:85vh; display:flex; flex-direction:column;">
+    <div
+      style="background:#fff; padding:25px; border-radius:12px; width:450px; max-height:85vh; display:flex; flex-direction:column;">
       <h3>Create New Class</h3>
 
       <label style="display:block; margin-top:15px; font-weight:500;">Class Name</label>
-      <input type="text" id="classNameInput" placeholder="ex: CS101" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <input type="text" id="classNameInput" placeholder="ex: CS101"
+        style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
 
       <label style="display:block; font-weight:500; margin-bottom:5px;">Add Students</label>
-      <input type="text" id="creationStudentSearch" placeholder="Search students..." style="width:100%; margin-bottom:10px; padding:8px; box-sizing: border-box; border:1px solid #ccc; border-radius:6px;">
-      
-      <div id="creationStudentsList" style="flex:1; overflow-y:auto; border:1px solid #f3f4f6; border-radius:8px; padding:10px; margin-bottom:20px;">
+      <input type="text" id="creationStudentSearch" placeholder="Search students..."
+        style="width:100%; margin-bottom:10px; padding:8px; box-sizing: border-box; border:1px solid #ccc; border-radius:6px;">
+
+      <div id="creationStudentsList"
+        style="flex:1; overflow-y:auto; border:1px solid #f3f4f6; border-radius:8px; padding:10px; margin-bottom:20px;">
         <!-- Student checkboxes populated here -->
       </div>
 
@@ -174,10 +183,12 @@
 
   <div id="viewStudentsModal"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); justify-content:center; align-items:center; z-index:900;">
-    <div style="background:#fff; padding:25px; border-radius:12px; width:500px; max-height:80vh; display:flex; flex-direction:column;">
+    <div
+      style="background:#fff; padding:25px; border-radius:12px; width:500px; max-height:80vh; display:flex; flex-direction:column;">
       <h3 id="studentModalTitle" style="margin-bottom:15px;">Students in Class</h3>
-      
-      <input type="text" id="studentSearch" placeholder="Search students by name or email..." style="width:100%; margin-bottom:15px; padding:10px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;">
+
+      <input type="text" id="studentSearch" placeholder="Search students by name or email..."
+        style="width:100%; margin-bottom:15px; padding:10px; box-sizing:border-box; border:1px solid #ccc; border-radius:6px;">
 
       <div id="studentsList" style="flex:1; overflow-y:auto; padding-right:5px;">
         <!-- Students will be dynamically populated here -->
@@ -189,8 +200,7 @@
     </div>
   </div>
 
-  <div id="logoutModal"
-    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+  <div id="logoutModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
            justify-content:center; align-items:center; z-index:1000;">
 
     <div style="background:#fff; padding:25px; border-radius:12px; width:350px; text-align:center;">
@@ -210,9 +220,14 @@
     <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
       <h3>Add New Faculty</h3>
       <label style="display:block; margin-top:15px; font-weight:500;">Full Name</label>
-      <input type="text" id="facultyNameInput" placeholder="ex: Prof. John Doe" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <input type="text" id="facultyNameInput" placeholder="ex: Prof. John Doe"
+        style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <label style="display:block; font-weight:500;">Email Address</label>
+      <input type="email" id="facultyEmailInput" placeholder="prof.joe@example.com"
+        style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
       <label style="display:block; font-weight:500;">Department</label>
-      <input type="text" id="facultyDeptInput" placeholder="ex: Computer Science" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+      <input type="text" id="facultyDeptInput" placeholder="ex: Computer Science"
+        style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button id="cancelAddFacultyBtn" class="btn secondary">Cancel</button>
         <button id="saveFacultyBtn" class="btn primary">Add Faculty</button>
@@ -225,9 +240,11 @@
     <div style="background:#fff; padding:25px; border-radius:12px; width:400px;">
       <h3>Add New Student</h3>
       <label style="display:block; margin-top:15px; font-weight:500;">Full Name</label>
-      <input type="text" id="studentNameInput" placeholder="ex: Jane Smith" style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
+      <input type="text" id="studentNameInput" placeholder="ex: Jane Smith"
+        style="width:100%; margin:8px 0 15px; padding:8px; box-sizing: border-box;">
       <label style="display:block; font-weight:500;">Email Address</label>
-      <input type="email" id="studentEmailInput" placeholder="jane.smith@example.com" style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
+      <input type="email" id="studentEmailInput" placeholder="jane.smith@example.com"
+        style="width:100%; margin:8px 0 20px; padding:8px; box-sizing: border-box;">
       <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button id="cancelAddStudentBtn" class="btn secondary">Cancel</button>
         <button id="saveStudentBtn" class="btn primary">Add Student</button>
@@ -237,129 +254,142 @@
 
   <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  getDocs,
-  addDoc,
-  doc,
-  getDoc,
-  deleteDoc,
-  updateDoc,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      doc,
+      getDoc,
+      setDoc,
+      deleteDoc,
+      updateDoc,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { 
-  getAuth, 
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      deleteUser,
+      setPersistence,
+      inMemoryPersistence
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
-  authDomain: "aplms-0001.firebaseapp.com",
-  projectId: "aplms-0001",
-  storageBucket: "aplms-0001.firebasestorage.app",
-  messagingSenderId: "848681094849",
-  appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
+      authDomain: "aplms-0001.firebaseapp.com",
+      projectId: "aplms-0001",
+      storageBucket: "aplms-0001.firebasestorage.app",
+      messagingSenderId: "848681094849",
+      appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-/* =========================
-   AUTH + ROLE PROTECTION
-========================= */
+    // Secondary Auth Instance for creating users without logging out the admin
+    const secondaryApp = initializeApp(firebaseConfig, "secondary");
+    const secondaryAuth = getAuth(secondaryApp);
 
-onAuthStateChanged(auth, async (user) => {
+    // CRITICAL: Set persistence to NONE (in-memory) so it doesn't conflict with Admin session
+    setPersistence(secondaryAuth, inMemoryPersistence);
 
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
+    /* =========================
+       AUTH + ROLE PROTECTION
+    ========================= */
 
-  const userDoc = await getDoc(doc(db, "users", user.uid));
+    onAuthStateChanged(auth, async (user) => {
 
-  if (!userDoc.exists()) {
-    await signOut(auth);
-    window.location.href = "index.html";
-    return;
-  }
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
 
-  const userData = userDoc.data();
+      const userDoc = await getDoc(doc(db, "users", user.uid));
 
-  if (userData.role !== "admin") {
-    if (userData.role === "faculty") {
-        window.location.href = "faculty_dashboard.html";
-    } else {
-        window.location.href = "student_dashboard.html";
+      if (!userDoc.exists()) {
+        await signOut(auth);
+        window.location.href = "index.html";
+        return;
+      }
+
+      const userData = userDoc.data();
+
+      if (userData.role !== "admin") {
+        if (userData.role === "faculty") {
+          window.location.href = "faculty_dashboard.html";
+        } else {
+          window.location.href = "student_dashboard.html";
+        }
+        return;
+      }
+
+      document.querySelector(".user-name").innerText = userData.name || "Admin";
+
+      loadLabs();
+      loadFacultyOptions();
+      loadClassOptions();
+      loadClassesList();
+      loadFacultyList();
+      loadStudentsList();
+    });
+
+    /* =========================
+       TAB SWITCHING
+    ========================= */
+    const tabLabs = document.getElementById("tabLabs");
+    const tabClasses = document.getElementById("tabClasses");
+    const tabFaculty = document.getElementById("tabFaculty");
+    const tabStudents = document.getElementById("tabStudents");
+
+    const viewLabs = document.getElementById("viewLabs");
+    const viewClasses = document.getElementById("viewClasses");
+    const viewFaculty = document.getElementById("viewFaculty");
+    const viewStudents = document.getElementById("viewStudents");
+
+    const allTabs = [tabLabs, tabClasses, tabFaculty, tabStudents];
+    const allViews = [viewLabs, viewClasses, viewFaculty, viewStudents];
+
+    function switchTab(targetTab, targetView) {
+      allTabs.forEach(t => t.classList.remove("active"));
+      allViews.forEach(v => v.classList.remove("active"));
+      targetTab.classList.add("active");
+      targetView.classList.add("active");
     }
-    return;
-  }
 
-  document.querySelector(".user-name").innerText = userData.name || "Admin";
+    tabLabs.addEventListener("click", () => switchTab(tabLabs, viewLabs));
+    tabClasses.addEventListener("click", () => switchTab(tabClasses, viewClasses));
+    tabFaculty.addEventListener("click", () => switchTab(tabFaculty, viewFaculty));
+    tabStudents.addEventListener("click", () => switchTab(tabStudents, viewStudents));
 
-  loadLabs();
-  loadFacultyOptions();
-  loadClassOptions();
-  loadClassesList();
-  loadFacultyList();
-  loadStudentsList();
-});
+    /* =========================
+       LOAD LABS
+    ========================= */
 
-/* =========================
-   TAB SWITCHING
-========================= */
-const tabLabs = document.getElementById("tabLabs");
-const tabClasses = document.getElementById("tabClasses");
-const tabFaculty = document.getElementById("tabFaculty");
-const tabStudents = document.getElementById("tabStudents");
+    async function loadLabs() {
 
-const viewLabs = document.getElementById("viewLabs");
-const viewClasses = document.getElementById("viewClasses");
-const viewFaculty = document.getElementById("viewFaculty");
-const viewStudents = document.getElementById("viewStudents");
+      const container = document.getElementById("adminLabContainer");
+      container.innerHTML = "";
 
-const allTabs = [tabLabs, tabClasses, tabFaculty, tabStudents];
-const allViews = [viewLabs, viewClasses, viewFaculty, viewStudents];
+      const querySnapshot = await getDocs(collection(db, "labs"));
 
-function switchTab(targetTab, targetView) {
-  allTabs.forEach(t => t.classList.remove("active"));
-  allViews.forEach(v => v.classList.remove("active"));
-  targetTab.classList.add("active");
-  targetView.classList.add("active");
-}
+      let totalLabs = 0;
 
-tabLabs.addEventListener("click", () => switchTab(tabLabs, viewLabs));
-tabClasses.addEventListener("click", () => switchTab(tabClasses, viewClasses));
-tabFaculty.addEventListener("click", () => switchTab(tabFaculty, viewFaculty));
-tabStudents.addEventListener("click", () => switchTab(tabStudents, viewStudents));
+      querySnapshot.forEach((docSnap) => {
+        totalLabs++;
 
-/* =========================
-   LOAD LABS
-========================= */
+        const data = docSnap.data();
 
-async function loadLabs() {
+        const div = document.createElement("div");
+        div.className = "lab-card";
 
-  const container = document.getElementById("adminLabContainer");
-  container.innerHTML = "";
-
-  const querySnapshot = await getDocs(collection(db, "labs"));
-
-  let totalLabs = 0;
-
-  querySnapshot.forEach((docSnap) => {
-    totalLabs++;
-
-    const data = docSnap.data();
-
-    const div = document.createElement("div");
-    div.className = "lab-card";
-
-    div.innerHTML = `
+        div.innerHTML = `
       <div class="lab-info">
         <h4><strong>${data.title}</strong></h4>
         <p class="lab-meta" style="margin-top:4px;">Assigned to: ${data.faculty_name || "Unassigned"} | Class: ${data.class || "Not set"}</p>
@@ -370,57 +400,81 @@ async function loadLabs() {
       </div>
     `;
 
-    container.appendChild(div);
-  });
+        container.appendChild(div);
+      });
 
-  document.querySelector(".stat-card h2").innerText = totalLabs;
+      document.querySelector(".stat-card h2").innerText = totalLabs;
 
-  // Add event listeners for delete buttons
-  document.querySelectorAll(".delete-lab-btn").forEach(button => {
-    button.addEventListener("click", async (e) => {
-      const labId = e.target.getAttribute("data-id");
-      if(confirm("Are you sure you want to delete this lab? This cannot be undone.")) {
-        try {
-          await deleteDoc(doc(db, "labs", labId));
-          loadLabs(); // Refresh the list
-        } catch(error) {
-          alert("Error deleting lab: " + error.message);
-        }
-      }
-    });
-  });
-}
+      // Add event listeners for delete buttons
+      document.querySelectorAll(".delete-lab-btn").forEach(button => {
+        button.addEventListener("click", async (e) => {
+          const labId = e.target.getAttribute("data-id");
+          if (confirm("Are you sure you want to delete this lab? This will also DELETE all experiments and student submissions under it!")) {
+            try {
+              // 1. Get all assignments for this lab
+              const assignQ = query(collection(db, "assignments"), where("lab_id", "==", labId));
+              const assignSnap = await getDocs(assignQ);
 
-/* =========================
-   LOAD FACULTY FOR DROPDOWN
-========================= */
-async function loadFacultyOptions() {
-    const facultySelect = document.getElementById("facultySelect");
-    
-    const q = query(collection(db, "users"), where("role", "==", "faculty"));
-    const querySnapshot = await getDocs(q);
-    
-    querySnapshot.forEach((docSnap) => {
+              for (const aDoc of assignSnap.docs) {
+                const aid = aDoc.id;
+                // 2. Delete submissions for each assignment
+                const subQ = query(collection(db, "submissions"), where("assignmentId", "==", aid));
+                const subSnap = await getDocs(subQ);
+                for (const sDoc of subSnap.docs) {
+                  const sData = sDoc.data();
+                  // Delete central submission
+                  await deleteDoc(doc(db, "submissions", sDoc.id));
+                  // Delete student's copy if studentId exists
+                  if (sData.studentId) {
+                    try { await deleteDoc(doc(db, "users", sData.studentId, "submissions", aid)); } catch (e) { }
+                  }
+                }
+                // 3. Delete assignment itself
+                await deleteDoc(doc(db, "assignments", aid));
+              }
+
+              // 4. Delete Lab
+              await deleteDoc(doc(db, "labs", labId));
+              loadLabs();
+              alert("Lab and all its related data deleted.");
+            } catch (error) {
+              alert("Error deleting lab: " + error.message);
+            }
+          }
+        });
+      });
+    }
+
+    /* =========================
+       LOAD FACULTY FOR DROPDOWN
+    ========================= */
+    async function loadFacultyOptions() {
+      const facultySelect = document.getElementById("facultySelect");
+
+      const q = query(collection(db, "users"), where("role", "==", "faculty"));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const option = document.createElement("option");
         option.value = docSnap.id;
         option.textContent = data.name || data.email;
         option.dataset.name = data.name || data.email;
         facultySelect.appendChild(option);
-    });
-}
+      });
+    }
 
 
-/* =========================
-   LOAD CLASSES FOR DROPDOWN
-========================= */
-async function loadClassOptions() {
-    const classSelect = document.getElementById("labClass");
-    
-    // Fallback: Default 'Select a Class...' is already in HTML. Just append new ones.
-    const querySnapshot = await getDocs(collection(db, "classes"));
-    
-    querySnapshot.forEach((docSnap) => {
+    /* =========================
+       LOAD CLASSES FOR DROPDOWN
+    ========================= */
+    async function loadClassOptions() {
+      const classSelect = document.getElementById("labClass");
+
+      // Fallback: Default 'Select a Class...' is already in HTML. Just append new ones.
+      const querySnapshot = await getDocs(collection(db, "classes"));
+
+      querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const option = document.createElement("option");
         // Ensure "name" field or similar exists on the class document
@@ -428,260 +482,273 @@ async function loadClassOptions() {
         option.value = className;
         option.textContent = className;
         classSelect.appendChild(option);
-    });
-}
+      });
+    }
 
 
 
 
-/* =========================
-   CLASSES VIEW LOGIC
-========================= */
+    /* =========================
+       CLASSES VIEW LOGIC
+    ========================= */
 
-async function loadClassesList() {
-  const container = document.getElementById("adminClassContainer");
-  container.innerHTML = "";
+    async function loadClassesList() {
+      const container = document.getElementById("adminClassContainer");
+      container.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "classes"));
-  let totalClasses = 0;
+      const querySnapshot = await getDocs(collection(db, "classes"));
+      let totalClasses = 0;
 
-  querySnapshot.forEach((docSnap) => {
-    totalClasses++;
-    const data = docSnap.data();
-    const className = data.name || docSnap.id;
+      querySnapshot.forEach((docSnap) => {
+        totalClasses++;
+        const data = docSnap.data();
+        const className = data.name || docSnap.id;
 
-    const div = document.createElement("div");
-    div.className = "lab-card";
+        const div = document.createElement("div");
+        div.className = "lab-card";
 
-    div.innerHTML = `
+        div.innerHTML = `
       <div class="lab-info">
         <h4><strong>${className}</strong></h4>
       </div>
       <div class="lab-actions">
         <button class="btn primary view-students-btn" data-class="${className}">View Students</button>
-        <button class="btn secondary delete-class-btn" data-id="${docSnap.id}">Delete</button>
+        <button class="btn secondary delete-class-btn" data-id="${docSnap.id}" data-name="${className}">Delete</button>
       </div>
     `;
 
-    container.appendChild(div);
-  });
+        container.appendChild(div);
+      });
 
-  document.getElementById("totalClassesStat").innerText = totalClasses;
+      document.getElementById("totalClassesStat").innerText = totalClasses;
 
-  // View Students Logic
-  document.querySelectorAll(".view-students-btn").forEach(button => {
-    button.addEventListener("click", (e) => {
-      const className = e.target.getAttribute("data-class");
-      openStudentsModal(className);
+      // View Students Logic
+      document.querySelectorAll(".view-students-btn").forEach(button => {
+        button.addEventListener("click", (e) => {
+          const className = e.target.getAttribute("data-class");
+          openStudentsModal(className);
+        });
+      });
+
+      // Delete Class Logic
+      document.querySelectorAll(".delete-class-btn").forEach(button => {
+        button.addEventListener("click", async (e) => {
+          const classId = e.target.getAttribute("data-id");
+          const className = e.target.getAttribute("data-name") || classId; // Try to get name if stored
+
+          if (confirm(`Are you sure you want to delete class '${className}'? Students in this class will be unassigned.`)) {
+            try {
+              // 1. Find all students in this class
+              // NOTE: This assumes students store the class NAME in their 'class' field
+              const q = query(collection(db, "users"), where("class", "==", className));
+              const snap = await getDocs(q);
+
+              for (const uDoc of snap.docs) {
+                await updateDoc(doc(db, "users", uDoc.id), { class: "" });
+              }
+
+              // 2. Delete Class Doc
+              await deleteDoc(doc(db, "classes", classId));
+              loadClassesList();
+              loadClassOptions();
+              alert("Class deleted and students unassigned.");
+            } catch (error) {
+              alert("Error: " + error.message);
+            }
+          }
+        });
+      });
+    }
+
+    // Create Class Modal Open/Close
+    document.getElementById("createClassBtn").addEventListener("click", () => {
+      document.getElementById("createClassModal").style.display = "flex";
+      loadStudentsForCreation();
     });
-  });
+    document.getElementById("cancelClassBtn").addEventListener("click", () => {
+      document.getElementById("createClassModal").style.display = "none";
+    });
 
-  // Delete Class Logic
-  document.querySelectorAll(".delete-class-btn").forEach(button => {
-    button.addEventListener("click", async (e) => {
-      const classId = e.target.getAttribute("data-id");
-      if(confirm("Are you sure you want to delete this class?")) {
-        try {
-          await deleteDoc(doc(db, "classes", classId));
-          loadClassesList();
-          loadClassOptions(); // Refresh dropdown too
-        } catch(error) {
-          alert("Error: " + error.message);
-        }
+    // Load All Students for Creation Modal
+    let creationAllStudents = [];
+    async function loadStudentsForCreation() {
+      const container = document.getElementById("creationStudentsList");
+      container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
+
+      try {
+        const q = query(collection(db, "users"), where("role", "==", "student"));
+        const querySnapshot = await getDocs(q);
+
+        creationAllStudents = [];
+        querySnapshot.forEach(docSnap => {
+          creationAllStudents.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        renderCreationStudents(creationAllStudents);
+      } catch (error) {
+        container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
       }
-    });
-  });
-}
+    }
 
-// Create Class Modal Open/Close
-document.getElementById("createClassBtn").addEventListener("click", () => {
-  document.getElementById("createClassModal").style.display = "flex";
-  loadStudentsForCreation();
-});
-document.getElementById("cancelClassBtn").addEventListener("click", () => {
-  document.getElementById("createClassModal").style.display = "none";
-});
+    function renderCreationStudents(students) {
+      const container = document.getElementById("creationStudentsList");
+      container.innerHTML = "";
 
-// Load All Students for Creation Modal
-let creationAllStudents = [];
-async function loadStudentsForCreation() {
-  const container = document.getElementById("creationStudentsList");
-  container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
-  
-  try {
-    const q = query(collection(db, "users"), where("role", "==", "student"));
-    const querySnapshot = await getDocs(q);
-    
-    creationAllStudents = [];
-    querySnapshot.forEach(docSnap => {
-      creationAllStudents.push({ id: docSnap.id, ...docSnap.data() });
-    });
-    
-    renderCreationStudents(creationAllStudents);
-  } catch(error) {
-     container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
-  }
-}
+      students.forEach(student => {
+        const div = document.createElement("div");
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.style.gap = "10px";
+        div.style.padding = "5px 0";
+        div.style.borderBottom = "1px solid #f9fafb";
 
-function renderCreationStudents(students) {
-  const container = document.getElementById("creationStudentsList");
-  container.innerHTML = "";
-  
-  students.forEach(student => {
-    const div = document.createElement("div");
-    div.style.display = "flex";
-    div.style.alignItems = "center";
-    div.style.gap = "10px";
-    div.style.padding = "5px 0";
-    div.style.borderBottom = "1px solid #f9fafb";
-    
-    div.innerHTML = `
+        div.innerHTML = `
       <input type="checkbox" class="student-checkbox" value="${student.id}" id="chk-${student.id}">
       <label for="chk-${student.id}" style="font-size:13px; cursor:pointer; flex:1;">
         <div style="font-weight:500;">${student.name || "Unknown"}</div>
         <div style="color:#6b7280; font-size:11px;">${student.email || "No email"}</div>
       </label>
     `;
-    container.appendChild(div);
-  });
-}
+        container.appendChild(div);
+      });
+    }
 
-// Creation Modal Search
-document.getElementById("creationStudentSearch").addEventListener("keyup", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  const filtered = creationAllStudents.filter(s => 
-    (s.name || "").toLowerCase().includes(searchTerm) || 
-    (s.email || "").toLowerCase().includes(searchTerm)
-  );
-  renderCreationStudents(filtered);
-});
-
-// Save New Class
-document.getElementById("saveClassBtn").addEventListener("click", async () => {
-  const className = document.getElementById("classNameInput").value.trim();
-  if(!className) {
-    alert("Please enter a class name.");
-    return;
-  }
-
-  const selectedStudentIds = Array.from(document.querySelectorAll(".student-checkbox:checked"))
-    .map(cb => cb.value);
-
-  try {
-    // 1. Create Class Doc
-    const classRef = await addDoc(collection(db, "classes"), {
-      name: className,
-      created_at: new Date()
+    // Creation Modal Search
+    document.getElementById("creationStudentSearch").addEventListener("keyup", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      const filtered = creationAllStudents.filter(s =>
+        (s.name || "").toLowerCase().includes(searchTerm) ||
+        (s.email || "").toLowerCase().includes(searchTerm)
+      );
+      renderCreationStudents(filtered);
     });
-    
-    // 2. Update Student Docs
-    const batchPromises = selectedStudentIds.map(id => 
-      updateDoc(doc(db, "users", id), { class: className })
-    );
-    await Promise.all(batchPromises);
 
-    document.getElementById("createClassModal").style.display = "none";
-    document.getElementById("classNameInput").value = "";
-    document.getElementById("creationStudentSearch").value = "";
-    
-    loadClassesList();
-    loadClassOptions();
-    alert(`Class "${className}" created and ${selectedStudentIds.length} students assigned!`);
-  } catch(error) {
-    alert("Error creating class: " + error.message);
-  }
-});
+    // Save New Class
+    document.getElementById("saveClassBtn").addEventListener("click", async () => {
+      const className = document.getElementById("classNameInput").value.trim();
+      if (!className) {
+        alert("Please enter a class name.");
+        return;
+      }
 
-/* =========================
-   STUDENT MODAL LOGIC
-========================= */
-let currentViewedStudents = [];
+      const selectedStudentIds = Array.from(document.querySelectorAll(".student-checkbox:checked"))
+        .map(cb => cb.value);
 
-async function openStudentsModal(className) {
-  document.getElementById("studentModalTitle").innerText = `Students in ${className}`;
-  document.getElementById("viewStudentsModal").style.display = "flex";
-  document.getElementById("studentSearch").value = ""; // Clear old search
-  
-  const container = document.getElementById("studentsList");
-  container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
-  
-  try {
-    const q = query(collection(db, "users"), where("role", "==", "student"), where("class", "==", className));
-    const querySnapshot = await getDocs(q);
-    
-    currentViewedStudents = [];
-    querySnapshot.forEach(docSnap => {
-      currentViewedStudents.push(docSnap.data());
+      try {
+        // 1. Create Class Doc
+        const classRef = await addDoc(collection(db, "classes"), {
+          name: className,
+          created_at: new Date()
+        });
+
+        // 2. Update Student Docs
+        const batchPromises = selectedStudentIds.map(id =>
+          updateDoc(doc(db, "users", id), { class: className })
+        );
+        await Promise.all(batchPromises);
+
+        document.getElementById("createClassModal").style.display = "none";
+        document.getElementById("classNameInput").value = "";
+        document.getElementById("creationStudentSearch").value = "";
+
+        loadClassesList();
+        loadClassOptions();
+        alert(`Class "${className}" created and ${selectedStudentIds.length} students assigned!`);
+      } catch (error) {
+        alert("Error creating class: " + error.message);
+      }
     });
-    
-    renderStudentsList(currentViewedStudents);
-  } catch(error) {
-     container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
-  }
-}
 
-function renderStudentsList(studentsArray) {
-  const container = document.getElementById("studentsList");
-  container.innerHTML = "";
-  
-  if(studentsArray.length === 0) {
-    container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>No students found.</p>";
-    return;
-  }
-  
-  studentsArray.forEach(student => {
-    const div = document.createElement("div");
-    // Styling the list item similar to a tiny card
-    div.style.padding = "10px";
-    div.style.borderBottom = "1px solid #f3f4f6";
-    div.innerHTML = `
+    /* =========================
+       STUDENT MODAL LOGIC
+    ========================= */
+    let currentViewedStudents = [];
+
+    async function openStudentsModal(className) {
+      document.getElementById("studentModalTitle").innerText = `Students in ${className}`;
+      document.getElementById("viewStudentsModal").style.display = "flex";
+      document.getElementById("studentSearch").value = ""; // Clear old search
+
+      const container = document.getElementById("studentsList");
+      container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>Loading students...</p>";
+
+      try {
+        const q = query(collection(db, "users"), where("role", "==", "student"), where("class", "==", className));
+        const querySnapshot = await getDocs(q);
+
+        currentViewedStudents = [];
+        querySnapshot.forEach(docSnap => {
+          currentViewedStudents.push(docSnap.data());
+        });
+
+        renderStudentsList(currentViewedStudents);
+      } catch (error) {
+        container.innerHTML = `<p style='color:red;'>Error: ${error.message}</p>`;
+      }
+    }
+
+    function renderStudentsList(studentsArray) {
+      const container = document.getElementById("studentsList");
+      container.innerHTML = "";
+
+      if (studentsArray.length === 0) {
+        container.innerHTML = "<p style='color:#6b7280; font-size:14px;'>No students found.</p>";
+        return;
+      }
+
+      studentsArray.forEach(student => {
+        const div = document.createElement("div");
+        // Styling the list item similar to a tiny card
+        div.style.padding = "10px";
+        div.style.borderBottom = "1px solid #f3f4f6";
+        div.innerHTML = `
       <div style="font-weight:500; font-size:14px;">${student.name || "Unknown"}</div>
       <div style="color:#6b7280; font-size:12px;">${student.email || "No email"}</div>
     `;
-    container.appendChild(div);
-  });
-}
-
-// Live Search Filter
-document.getElementById("studentSearch").addEventListener("keyup", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  
-  const filtered = currentViewedStudents.filter(student => {
-    const nameMatch = (student.name || "").toLowerCase().includes(searchTerm);
-    const emailMatch = (student.email || "").toLowerCase().includes(searchTerm);
-    return nameMatch || emailMatch;
-  });
-  
-  renderStudentsList(filtered);
-});
-
-// Close Student Modal
-document.getElementById("closeStudentsBtn").addEventListener("click", () => {
-  document.getElementById("viewStudentsModal").style.display = "none";
-});
-
-/* =========================
-   FACULTY LIST LOGIC
-========================= */
-async function loadFacultyList() {
-  const container = document.getElementById("adminFacultyContainer");
-  container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading faculty...</p>";
-
-  try {
-    const q = query(collection(db, "users"), where("role", "==", "faculty"));
-    const querySnapshot = await getDocs(q);
-    container.innerHTML = "";
-
-    if (querySnapshot.empty) {
-      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No faculty members found.</p>";
-      return;
+        container.appendChild(div);
+      });
     }
 
-    querySnapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "lab-card";
-      div.innerHTML = `
+    // Live Search Filter
+    document.getElementById("studentSearch").addEventListener("keyup", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+
+      const filtered = currentViewedStudents.filter(student => {
+        const nameMatch = (student.name || "").toLowerCase().includes(searchTerm);
+        const emailMatch = (student.email || "").toLowerCase().includes(searchTerm);
+        return nameMatch || emailMatch;
+      });
+
+      renderStudentsList(filtered);
+    });
+
+    // Close Student Modal
+    document.getElementById("closeStudentsBtn").addEventListener("click", () => {
+      document.getElementById("viewStudentsModal").style.display = "none";
+    });
+
+    /* =========================
+       FACULTY LIST LOGIC
+    ========================= */
+    async function loadFacultyList() {
+      const container = document.getElementById("adminFacultyContainer");
+      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading faculty...</p>";
+
+      try {
+        const q = query(collection(db, "users"), where("role", "==", "faculty"));
+        const querySnapshot = await getDocs(q);
+        container.innerHTML = "";
+
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No faculty members found.</p>";
+          return;
+        }
+
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const div = document.createElement("div");
+          div.className = "lab-card";
+          div.innerHTML = `
         <div class="lab-info">
           <h4><strong>${data.name || "Unnamed Faculty"}</strong></h4>
           <p class="lab-meta">Department: ${data.department || "General"}</p>
@@ -690,68 +757,97 @@ async function loadFacultyList() {
           <button class="btn secondary delete-user-btn" data-id="${docSnap.id}">Remove</button>
         </div>
       `;
-      container.appendChild(div);
-    });
+          container.appendChild(div);
+        });
 
-    handleDeleteUserEvents("faculty");
-  } catch (error) {
-    container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
-  }
-}
-
-// Modal open/close
-document.getElementById("addFacultyBtn").addEventListener("click", () => {
-  document.getElementById("addFacultyModal").style.display = "flex";
-});
-document.getElementById("cancelAddFacultyBtn").addEventListener("click", () => {
-  document.getElementById("addFacultyModal").style.display = "none";
-});
-
-// Save Faculty
-document.getElementById("saveFacultyBtn").addEventListener("click", async () => {
-  const name = document.getElementById("facultyNameInput").value.trim();
-  const dept = document.getElementById("facultyDeptInput").value.trim();
-
-  if (!name || !dept) { alert("Please fill all fields."); return; }
-
-  try {
-    await addDoc(collection(db, "users"), {
-      name: name,
-      department: dept,
-      role: "faculty",
-      createdAt: new Date()
-    });
-    document.getElementById("addFacultyModal").style.display = "none";
-    document.getElementById("facultyNameInput").value = "";
-    document.getElementById("facultyDeptInput").value = "";
-    loadFacultyList();
-    loadFacultyOptions(); // Update lab faculty dropdown too
-  } catch (error) { alert("Error: " + error.message); }
-});
-
-
-/* =========================
-   STUDENTS LIST LOGIC
-========================= */
-async function loadStudentsList() {
-  const container = document.getElementById("adminStudentContainer");
-  container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading students...</p>";
-
-  try {
-    const q = query(collection(db, "users"), where("role", "==", "student"));
-    const querySnapshot = await getDocs(q);
-    container.innerHTML = "";
-
-    if (querySnapshot.empty) {
-      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No students found.</p>";
-      return;
+        handleDeleteUserEvents("faculty");
+      } catch (error) {
+        container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
+      }
     }
 
-    querySnapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "lab-card";
-      div.innerHTML = `
+    // Modal open/close
+    document.getElementById("addFacultyBtn").addEventListener("click", () => {
+      document.getElementById("addFacultyModal").style.display = "flex";
+    });
+    document.getElementById("cancelAddFacultyBtn").addEventListener("click", () => {
+      document.getElementById("addFacultyModal").style.display = "none";
+    });
+
+    // Save Faculty
+    document.getElementById("saveFacultyBtn").addEventListener("click", async () => {
+      const name = document.getElementById("facultyNameInput").value.trim();
+      const email = document.getElementById("facultyEmailInput").value.trim();
+      const dept = document.getElementById("facultyDeptInput").value.trim();
+
+      if (!name || !email || !dept) { alert("Please fill all fields."); return; }
+
+      const btn = document.getElementById("saveFacultyBtn");
+      btn.innerText = "Adding...";
+      btn.disabled = true;
+
+      console.log("Adding faculty member:", email);
+
+      try {
+        // 1. Create User in Firebase Auth
+        console.log("Creating auth user...");
+        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, "faculty123");
+        const uid = userCredential.user.uid;
+        console.log("Auth user created. UID:", uid);
+
+        // 2. Save User Details to Firestore
+        console.log("Saving to Firestore...");
+        await setDoc(doc(db, "users", uid), {
+          name: name,
+          email: email,
+          department: dept,
+          role: "faculty",
+          createdAt: new Date()
+        });
+
+        // 3. Cleanup secondary session immediately (important to avoid confusion)
+        console.log("Cleanup secondary session...");
+        await signOut(secondaryAuth);
+
+        document.getElementById("addFacultyModal").style.display = "none";
+        document.getElementById("facultyNameInput").value = "";
+        document.getElementById("facultyEmailInput").value = "";
+        document.getElementById("facultyDeptInput").value = "";
+        loadFacultyList();
+        loadFacultyOptions();
+        alert("Faculty member added successfully!");
+      } catch (error) {
+        console.error("Faculty creation error:", error);
+        alert("Error: " + error.message);
+      } finally {
+        btn.innerText = "Add Faculty";
+        btn.disabled = false;
+      }
+    });
+
+
+    /* =========================
+       STUDENTS LIST LOGIC
+    ========================= */
+    async function loadStudentsList() {
+      const container = document.getElementById("adminStudentContainer");
+      container.innerHTML = "<p style='padding:20px; color:#6b7280;'>Loading students...</p>";
+
+      try {
+        const q = query(collection(db, "users"), where("role", "==", "student"));
+        const querySnapshot = await getDocs(q);
+        container.innerHTML = "";
+
+        if (querySnapshot.empty) {
+          container.innerHTML = "<p style='padding:20px; color:#6b7280;'>No students found.</p>";
+          return;
+        }
+
+        querySnapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const div = document.createElement("div");
+          div.className = "lab-card";
+          div.innerHTML = `
         <div class="lab-info">
           <h4><strong>${data.name || "Unknown"}</strong></h4>
           <p class="lab-meta">${data.email || "No email"} | Class: ${data.class || "Unassigned"}</p>
@@ -760,135 +856,195 @@ async function loadStudentsList() {
           <button class="btn secondary delete-user-btn" data-id="${docSnap.id}">Remove</button>
         </div>
       `;
-      container.appendChild(div);
+          container.appendChild(div);
+        });
+
+        handleDeleteUserEvents("student");
+      } catch (error) {
+        container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
+      }
+    }
+
+    // Modal open/close
+    document.getElementById("addStudentBtn").addEventListener("click", () => {
+      document.getElementById("addStudentModal").style.display = "flex";
+    });
+    document.getElementById("cancelAddStudentBtn").addEventListener("click", () => {
+      document.getElementById("addStudentModal").style.display = "none";
     });
 
-    handleDeleteUserEvents("student");
-  } catch (error) {
-    container.innerHTML = `<p style='color:red; padding:20px;'>Error: ${error.message}</p>`;
-  }
-}
+    // Save Student
+    document.getElementById("saveStudentBtn").addEventListener("click", async () => {
+      const name = document.getElementById("studentNameInput").value.trim();
+      const email = document.getElementById("studentEmailInput").value.trim();
 
-// Modal open/close
-document.getElementById("addStudentBtn").addEventListener("click", () => {
-  document.getElementById("addStudentModal").style.display = "flex";
-});
-document.getElementById("cancelAddStudentBtn").addEventListener("click", () => {
-  document.getElementById("addStudentModal").style.display = "none";
-});
+      if (!name || !email) { alert("Please fill all fields."); return; }
 
-// Save Student
-document.getElementById("saveStudentBtn").addEventListener("click", async () => {
-  const name = document.getElementById("studentNameInput").value.trim();
-  const email = document.getElementById("studentEmailInput").value.trim();
+      const btn = document.getElementById("saveStudentBtn");
+      btn.innerText = "Adding...";
+      btn.disabled = true;
 
-  if (!name || !email) { alert("Please fill all fields."); return; }
+      console.log("Adding student:", email);
 
-  try {
-    await addDoc(collection(db, "users"), {
-      name: name,
-      email: email,
-      role: "student",
-      createdAt: new Date()
-    });
-    document.getElementById("addStudentModal").style.display = "none";
-    document.getElementById("studentNameInput").value = "";
-    document.getElementById("studentEmailInput").value = "";
-    loadStudentsList();
-  } catch (error) { alert("Error: " + error.message); }
-});
+      try {
+        // 1. Create User in Firebase Auth
+        console.log("Creating auth user...");
+        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, "student123");
+        const uid = userCredential.user.uid;
+        console.log("Auth user created. UID:", uid);
 
-function handleDeleteUserEvents(type) {
-  document.querySelectorAll(".delete-user-btn").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.target.dataset.id;
-      if (confirm(`Are you sure you want to remove this ${type}?`)) {
-        try {
-          await deleteDoc(doc(db, "users", id));
-          if (type === "faculty") { loadFacultyList(); loadFacultyOptions(); }
-          else loadStudentsList();
-        } catch (error) { alert("Error: " + error.message); }
+        // 2. Save User Details to Firestore
+        console.log("Saving student to Firestore...");
+        await setDoc(doc(db, "users", uid), {
+          name: name,
+          email: email,
+          role: "student",
+          createdAt: new Date()
+        });
+
+        // 3. Cleanup secondary session
+        console.log("Cleanup secondary session...");
+        await signOut(secondaryAuth);
+
+        document.getElementById("addStudentModal").style.display = "none";
+        document.getElementById("studentNameInput").value = "";
+        document.getElementById("studentEmailInput").value = "";
+        loadStudentsList();
+        alert("Student added successfully!");
+      } catch (error) {
+        console.error("Student creation error:", error);
+        alert("Error: " + error.message);
+      } finally {
+        btn.innerText = "Add Student";
+        btn.disabled = false;
       }
     });
-  });
-}
 
-/* =========================
-   CREATE LAB MODAL LOGIC
-========================= */
+    function handleDeleteUserEvents(type) {
+      document.querySelectorAll(".delete-user-btn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.target.dataset.id;
+          if (confirm(`Are you sure you want to remove this ${type}? This will wipe their profile, submissions, and Authentication login!`)) {
+            try {
+              // 0. Get user email before deleting firestore doc
+              const userSnap = await getDoc(doc(db, "users", id));
+              const userData = userSnap.data();
+              const email = userData?.email;
 
-document.getElementById("createLabBtn").addEventListener("click", () => {
-  document.getElementById("createLabModal").style.display = "flex";
-});
+              // 1. Wipe Authentication record (Workaround for client-side)
+              if (email) {
+                const defaultPwd = type === "student" ? "student123" : "faculty123";
+                try {
+                  console.log(`Attempting to wipe Auth for ${email}...`);
+                  const userCred = await signInWithEmailAndPassword(secondaryAuth, email, defaultPwd);
+                  await deleteUser(userCred.user);
+                  console.log("Auth record deleted successfully.");
+                } catch (authErr) {
+                  console.warn("Could not delete Auth record. It may already be gone or password was changed.", authErr);
+                }
+              }
 
-document.getElementById("cancelLabBtn").addEventListener("click", () => {
-  document.getElementById("createLabModal").style.display = "none";
-});
+              // 2. If student, wipe their submissions
+              if (type === "student") {
+                const subQ = query(collection(db, "submissions"), where("studentId", "==", id));
+                const subSnap = await getDocs(subQ);
+                for (const sDoc of subSnap.docs) {
+                  await deleteDoc(doc(db, "submissions", sDoc.id));
+                }
+              }
 
-document.getElementById("saveLabBtn").addEventListener("click", async () => {
+              // 3. Delete user doc
+              await deleteDoc(doc(db, "users", id));
 
-  const title = document.getElementById("labTitle").value;
-  const labClass = document.getElementById("labClass").value;
-  const facultyId = document.getElementById("facultySelect").value;
+              if (type === "faculty") { loadFacultyList(); loadFacultyOptions(); }
+              else loadStudentsList();
 
-  if (!title) {
-    alert("Enter lab title");
-    return;
-  }
-  
-  if (!labClass) {
-    alert("Enter target class");
-    return;
-  }
-  
-  if (!facultyId) {
-      alert("Please select a faculty member");
-      return;
-  }
-  
-  const facultyName = document.getElementById("facultySelect").options[document.getElementById("facultySelect").selectedIndex].dataset.name;
+              alert(`${type.charAt(0).toUpperCase() + type.slice(1)} and their data removed successfully.`);
+            } catch (error) {
+              console.error("User deletion error:", error);
+              alert("Error: " + error.message);
+            }
+          }
+        });
+      });
+    }
 
-  await addDoc(collection(db, "labs"), {
-    title: title,
-    class: labClass,
-    faculty_id: facultyId,
-    faculty_name: facultyName,
-    created_at: new Date()
-  });
+    /* =========================
+       CREATE LAB MODAL LOGIC
+    ========================= */
 
-  document.getElementById("createLabModal").style.display = "none";
-  document.getElementById("labTitle").value = "";
-  document.getElementById("labClass").value = "";
-  document.getElementById("facultySelect").value = "";
+    document.getElementById("createLabBtn").addEventListener("click", () => {
+      document.getElementById("createLabModal").style.display = "flex";
+    });
 
-  loadLabs();
-});
+    document.getElementById("cancelLabBtn").addEventListener("click", () => {
+      document.getElementById("createLabModal").style.display = "none";
+    });
 
-/* =========================
-   LOGOUT WITH CONFIRMATION
-========================= */
+    document.getElementById("saveLabBtn").addEventListener("click", async () => {
 
-// Open confirmation modal
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  document.getElementById("logoutModal").style.display = "flex";
-});
+      const title = document.getElementById("labTitle").value;
+      const labClass = document.getElementById("labClass").value;
+      const facultyId = document.getElementById("facultySelect").value;
 
-// Cancel logout
-document.getElementById("cancelLogoutBtn").addEventListener("click", () => {
-  document.getElementById("logoutModal").style.display = "none";
-});
+      if (!title) {
+        alert("Enter lab title");
+        return;
+      }
 
-// Confirm logout
-document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-    // Redirect handled by onAuthStateChanged
-  } catch (error) {
-    console.error("Logout error:", error);
-  }
-});
+      if (!labClass) {
+        alert("Enter target class");
+        return;
+      }
 
-</script>
+      if (!facultyId) {
+        alert("Please select a faculty member");
+        return;
+      }
+
+      const facultyName = document.getElementById("facultySelect").options[document.getElementById("facultySelect").selectedIndex].dataset.name;
+
+      await addDoc(collection(db, "labs"), {
+        title: title,
+        class: labClass,
+        faculty_id: facultyId,
+        faculty_name: facultyName,
+        created_at: new Date()
+      });
+
+      document.getElementById("createLabModal").style.display = "none";
+      document.getElementById("labTitle").value = "";
+      document.getElementById("labClass").value = "";
+      document.getElementById("facultySelect").value = "";
+
+      loadLabs();
+    });
+
+    /* =========================
+       LOGOUT WITH CONFIRMATION
+    ========================= */
+
+    // Open confirmation modal
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      document.getElementById("logoutModal").style.display = "flex";
+    });
+
+    // Cancel logout
+    document.getElementById("cancelLogoutBtn").addEventListener("click", () => {
+      document.getElementById("logoutModal").style.display = "none";
+    });
+
+    // Confirm logout
+    document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        // Redirect handled by onAuthStateChanged
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    });
+
+  </script>
 
 </body>
 
