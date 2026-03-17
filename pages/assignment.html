@@ -344,7 +344,7 @@
                 <span class="spinner" id="submitSpinner"></span>
                 Submit
             </button>
-            <button id="logoutBtn" class="btn secondary" style="background: #fee2e2; color: #dc2626;">Logout</button>
+
         </div>
     </header>
 
@@ -403,7 +403,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase Config
@@ -786,17 +786,7 @@
             }, 3000);
         }
 
-        // Logout
-        document.getElementById("logoutBtn").addEventListener("click", async () => {
-            if (confirm("Are you sure you want to logout?")) {
-                try {
-                    await signOut(auth);
-                    // Redirect is handled by onAuthStateChanged listener
-                } catch (error) {
-                    console.error("Logout error:", error);
-                }
-            }
-        });
+
 
         // Ensure editor layout refreshes correctly
         setTimeout(() => {
