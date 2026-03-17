@@ -13,31 +13,32 @@ APLMS is a comprehensive web-based platform designed to streamline academic prog
 - **Performance Overview**: Track progress through a personalized student dashboard.
 
 ### 👩‍🏫 For Faculty
-- **Effortless Evaluation**: Review student code and verify outputs with ease.
-- **Comprehensive Dashboard**: Real-time statistics on total submissions and student performance.
-- **Assignment Management**: Create and manage programming assignments across different subjects.
-- **Plagiarism Detection**: Tools to ensure code integrity and originality.
+- **AI-Powered Evaluation**: Automated code review using Groq (Llama 3.3) that analyzes logic, output correctness, and code structure.
+- **Effortless Review**: Detailed submission viewing with an integrated evaluation drawer and real-time execution verification.
+- **Comprehensive Dashboard**: Track active labs and total submissions across all supervised sessions.
+- **Cascading Management**: Delete experiments and labs with full cleanup of student submissions.
 
 ### 👨‍💼 For Admins
-- **User Management**: Efficiently manage student and faculty accounts.
-- **System Configuration**: Fine-tune system settings for optimal performance.
-- **Activity Monitoring**: Oversee overall system usage and health.
+- **Full User Management**: Specialized tabs for Faculty and Students with secure account creation (Auth + Firestore).
+- **Class Organization**: Manage class lists and dynamically assign students to their respective groups.
+- **Data Integrity**: Comprehensive cascading delete system that wipes all associated records when a lab, class, or user is removed.
+- **Performance Overview**: System-wide statistics on active sessions and user counts.
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla for maximum control)
-- **Framework**: Electron (for local code execution and desktop capabilities)
-- **Backend**: Node.js, Express
-- **Database**: Firebase Firestore (for real-time data synchronization)
-- **Local Runner**: Custom Node.js runner server for multi-language execution (Python, C, C++, Java, Node.js).
+- **Frontend**: HTML5, Vanilla CSS3, JavaScript.
+- **Shell**: [Electron](https://www.electronjs.org/) (handles local process execution and secure IPC).
+- **AI Engine**: [Groq API](https://groq.com/) (using Llama 3.3 70B for high-speed, intelligent code evaluation).
+- **Backend/Auth**: [Firebase](https://firebase.google.com/) (Authentication & Firestore for real-time synchronization).
+- **Local Runner**: Integrated Node.js environment supporting Python, C, C++, Java, and JavaScript.
 
 ## 📂 Project Structure
 
-- `backend/`: Server-side logic for code execution and Firebase configuration.
-- `css/`: Styling assets for a modern and responsive UI.
-- `pages/`: HTML files for different user interfaces (Dashboards, IDE, Review, etc.).
-- `main.js`: Entry point for the Electron application.
-- `preload.js`: Electron preload script for secure IPC communication.
+- `backend/`: Supporting logic for local execution environments.
+- `css/`: Modern design system including dashboards, coding screens, and interactive drawers.
+- `pages/`: Specialized HTML modules for Students, Faculty, and Admin workflows.
+- `main.js`: Main Electron process handling OS-level interactions and AI API bridging.
+- `preload.js`: Secure IPC layer exposing localized APIs to the renderer.
 
 ## 🚦 Getting Started
 
