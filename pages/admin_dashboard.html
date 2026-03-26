@@ -411,45 +411,7 @@
           const labId = e.target.getAttribute("data-id");
           if (confirm("Are you sure you want to delete this lab? This will also DELETE all experiments and student submissions under it!")) {
             try {
-              // 1. Get all assignments for this lab
-              const assignQ = query(collection(db, "assignments"), where("lab_id", "==", labId));
-              const assignSnap = await getDocs(assignQ);
-
-              // Use blocks of promises for better reliability
-              const assignmentDeletionPromises = assignSnap.docs.map(async (aDoc) => {
-                const aid = aDoc.id;
-                
-                // 2. Delete submissions for each assignment
-                const subQ = query(collection(db, "submissions"), where("assignmentId", "==", aid));
-                const subSnap = await getDocs(subQ);
-                
-                const submissionDeletionPromises = subSnap.docs.map(async (sDoc) => {
-                  const sData = sDoc.data();
-                  const subId = sDoc.id;
-                  
-                  const individualDeletes = [deleteDoc(doc(db, "submissions", subId))];
-                  
-                  if (sData.studentId) {
-                    individualDeletes.push(
-                      deleteDoc(doc(db, "users", sData.studentId, "submissions", aid)).catch(err => {
-                        console.warn(`Could not delete student's copy of submission ${aid} for ${sData.studentId}:`, err);
-                      })
-                    );
-                  }
-                  return Promise.all(individualDeletes);
-                });
-
-                await Promise.all(submissionDeletionPromises);
-                
-                // 3. Delete assignment itself
-                return deleteDoc(doc(db, "assignments", aid));
-              });
-
-              await Promise.all(assignmentDeletionPromises);
-
-              // 4. Delete Lab
-              await deleteDoc(doc(db, "labs", labId));
-              
+              await deleteLab(labId);
               loadLabs();
               alert("Lab and all its related data deleted successfully.");
             } catch (error) {
@@ -459,6 +421,47 @@
           }
         });
       });
+    }
+
+    async function deleteLab(labId) {
+      // 1. Get all assignments for this lab
+      const assignQ = query(collection(db, "assignments"), where("lab_id", "==", labId));
+      const assignSnap = await getDocs(assignQ);
+
+      // Use blocks of promises for better reliability
+      const assignmentDeletionPromises = assignSnap.docs.map(async (aDoc) => {
+        const aid = aDoc.id;
+
+        // 2. Delete submissions for each assignment
+        const subQ = query(collection(db, "submissions"), where("assignmentId", "==", aid));
+        const subSnap = await getDocs(subQ);
+
+        const submissionDeletionPromises = subSnap.docs.map(async (sDoc) => {
+          const sData = sDoc.data();
+          const subId = sDoc.id;
+
+          const individualDeletes = [deleteDoc(doc(db, "submissions", subId))];
+
+          if (sData.studentId) {
+            individualDeletes.push(
+              deleteDoc(doc(db, "users", sData.studentId, "submissions", aid)).catch(err => {
+                console.warn(`Could not delete student's copy of submission ${aid} for ${sData.studentId}:`, err);
+              })
+            );
+          }
+          return Promise.all(individualDeletes);
+        });
+
+        await Promise.all(submissionDeletionPromises);
+
+        // 3. Delete assignment itself
+        return deleteDoc(doc(db, "assignments", aid));
+      });
+
+      await Promise.all(assignmentDeletionPromises);
+
+      // 4. Delete Lab
+      await deleteDoc(doc(db, "labs", labId));
     }
 
     /* =========================
@@ -550,24 +553,27 @@
       document.querySelectorAll(".delete-class-btn").forEach(button => {
         button.addEventListener("click", async (e) => {
           const classId = e.target.getAttribute("data-id");
-          const className = e.target.getAttribute("data-name") || classId; // Try to get name if stored
+          const className = e.target.getAttribute("data-name") || classId;
 
-          if (confirm(`Are you sure you want to delete class '${className}'? Students in this class will be unassigned.`)) {
+          if (confirm(`Are you sure you want to delete class '${className}'? This will also DELETE all Labs, Experiments, and Submissions for this class!`)) {
             try {
-              // 1. Find all students in this class
-              // NOTE: This assumes students store the class NAME in their 'class' field
+              // 1. Delete all Labs for this class (cascading)
+              const labsQ = query(collection(db, "labs"), where("class", "==", className));
+              const labsSnap = await getDocs(labsQ);
+              const labDeletePromises = labsSnap.docs.map(lDoc => deleteLab(lDoc.id));
+              await Promise.all(labDeletePromises);
+
+              // 2. Unassign students
               const q = query(collection(db, "users"), where("class", "==", className));
               const snap = await getDocs(q);
+              const unassignPromises = snap.docs.map(uDoc => updateDoc(doc(db, "users", uDoc.id), { class: "" }));
+              await Promise.all(unassignPromises);
 
-              for (const uDoc of snap.docs) {
-                await updateDoc(doc(db, "users", uDoc.id), { class: "" });
-              }
-
-              // 2. Delete Class Doc
+              // 3. Delete Class Doc
               await deleteDoc(doc(db, "classes", classId));
               loadClassesList();
               loadClassOptions();
-              alert("Class deleted and students unassigned.");
+              alert("Class and all its related data deleted successfully.");
             } catch (error) {
               alert("Error: " + error.message);
             }
@@ -947,26 +953,38 @@
               const userData = userSnap.data();
               const email = userData?.email;
 
-              // 1. Wipe Authentication record (Workaround for client-side)
+              // 1. Wipe Authentication record
               if (email) {
                 const defaultPwd = type === "student" ? "student123" : "faculty123";
                 try {
-                  console.log(`Attempting to wipe Auth for ${email}...`);
                   const userCred = await signInWithEmailAndPassword(secondaryAuth, email, defaultPwd);
                   await deleteUser(userCred.user);
                   console.log("Auth record deleted successfully.");
                 } catch (authErr) {
-                  console.warn("Could not delete Auth record. It may already be gone or password was changed.", authErr);
+                  console.warn("Could not delete Auth record.", authErr);
                 }
               }
 
-              // 2. If student, wipe their submissions
+              // 2. Data cleanup
               if (type === "student") {
+                // Wipe global submissions
                 const subQ = query(collection(db, "submissions"), where("studentId", "==", id));
                 const subSnap = await getDocs(subQ);
-                for (const sDoc of subSnap.docs) {
-                  await deleteDoc(doc(db, "submissions", sDoc.id));
-                }
+                const subDeletes = subSnap.docs.map(sDoc => deleteDoc(doc(db, "submissions", sDoc.id)));
+                await Promise.all(subDeletes);
+                
+                // Wipe personal sub-collection documents (need to fetch them first)
+                const personalSubQ = collection(db, "users", id, "submissions");
+                const personalSubSnap = await getDocs(personalSubQ);
+                const personalDeletes = personalSubSnap.docs.map(psDoc => deleteDoc(doc(db, "users", id, "submissions", psDoc.id)));
+                await Promise.all(personalDeletes);
+
+              } else if (type === "faculty") {
+                // Wipe Labs managed by this faculty
+                const labsQ = query(collection(db, "labs"), where("faculty_id", "==", id));
+                const labsSnap = await getDocs(labsQ);
+                const labDeletes = labsSnap.docs.map(lDoc => deleteLab(lDoc.id));
+                await Promise.all(labDeletes);
               }
 
               // 3. Delete user doc
