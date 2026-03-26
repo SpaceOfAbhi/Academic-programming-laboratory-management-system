@@ -68,9 +68,7 @@ The runner server handles local code execution. Open a separate terminal and run
 ```bash
 cd backend
 npm install
-node server.js
 ```
-The server will start listening on `http://localhost:5000`.
 
 #### 2. Launch APLMS
 Run the Electron application:
