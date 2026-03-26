@@ -95,14 +95,8 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
-  authDomain: "aplms-0001.firebaseapp.com",
-  projectId: "aplms-0001",
-  storageBucket: "aplms-0001.firebasestorage.app",
-  messagingSenderId: "848681094849",
-  appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
-};
+    // Fetch config from main process
+    const firebaseConfig = await window.electronAPI.getFirebaseConfig();
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);

@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onTerminalOut: (callback) => ipcRenderer.on('terminal-out', (event, data) => callback(data)),
     onTerminalErr: (callback) => ipcRenderer.on('terminal-err', (event, data) => callback(data)),
     callAI: (payload) => ipcRenderer.invoke('call-ai', payload),
-    onAIStatus: (callback) => ipcRenderer.on('ai-status', (event, data) => callback(data))
+    onAIStatus: (callback) => ipcRenderer.on('ai-status', (event, data) => callback(data)),
+    getFirebaseConfig: () => ipcRenderer.invoke('get-firebase-config')
 });

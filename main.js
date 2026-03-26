@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -216,6 +217,18 @@ ipcMain.on('send-stdin', (event, text) => {
     }
 });
 
+// Provide Firebase config to renderer safely
+ipcMain.handle('get-firebase-config', () => {
+    return {
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID
+    };
+});
+
 // ─── Groq API handler (main process — no CORS/CSP restrictions) ───
 const https = require('https');
 
@@ -255,6 +268,12 @@ const GROQ_MODELS = [
 ];
 
 ipcMain.handle('call-ai', async (event, { apiKey, prompt }) => {
+    const groqKey = apiKey || process.env.GROQ_API_KEY;
+    
+    if (!groqKey) {
+        return { error: 'Groq API Key is missing. Please check your .env file.' };
+    }
+
     const bodyStr = JSON.stringify({
         model: GROQ_MODELS[0], // Will be updated in loop
         messages: [{ role: 'user', content: prompt }],
@@ -270,7 +289,7 @@ ipcMain.handle('call-ai', async (event, { apiKey, prompt }) => {
             currentBody.model = model;
             const body = JSON.stringify(currentBody);
 
-            const result = await groqRequest(apiKey, model, body);
+            const result = await groqRequest(groqKey, model, body);
 
             if (result.networkError) {
                 return { error: 'Network error: ' + result.networkError };

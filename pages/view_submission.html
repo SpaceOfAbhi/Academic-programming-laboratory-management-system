@@ -594,16 +594,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const GROQ_API_KEY = "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";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAcE_jpWoJT0_-Ltq8PNDD5aOivik6Gu1E",
-            authDomain: "aplms-0001.firebaseapp.com",
-            projectId: "aplms-0001",
-            storageBucket: "aplms-0001.firebasestorage.app",
-            messagingSenderId: "848681094849",
-            appId: "1:848681094849:web:e8b9401ce5d5c78fec0e40"
-        };
+        // Fetch config from main process
+        const firebaseConfig = await window.electronAPI.getFirebaseConfig();
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -766,9 +758,9 @@ Grade: A>=90, B>=80, C>=65, D>=50, F<50`;
             try {
                 let result;
 
-                // Use Electron IPC if available (avoids renderer CORS restrictions)
+                // Use Electron IPC (uses key from .env)
                 if (window.electronAPI && window.electronAPI.callAI) {
-                    result = await window.electronAPI.callAI({ apiKey: GROQ_API_KEY, prompt });
+                    result = await window.electronAPI.callAI({ prompt });
                 } else {
                     // Fallback: direct fetch (unlikely in Electron but kept for reference)
                     const resp = await fetch(
