@@ -409,7 +409,24 @@
             return;
         }
 
-        const assignments = Array.from(assignmentsMap.values());
+        const assignmentsRaw = Array.from(assignmentsMap.values());
+        const assignments = [];
+
+        // 3. DEFENSIVE CHECK: Verify each assignment's lab still exists
+        // (Handles cases where lab was deleted but assignment document remained)
+        if (assignmentsRaw.length > 0) {
+            const validLabIds = new Set();
+            // Fetch all labs for this class again to be sure (already fetched in layered query, but let's be explicit)
+            const labsQ = query(collection(db, "labs"), where("class", "==", studentClass.trim()));
+            const labsSnap = await getDocs(labsQ);
+            labsSnap.forEach(lDoc => validLabIds.add(lDoc.id));
+
+            for (const assign of assignmentsRaw) {
+                if (assign.lab_id && validLabIds.has(assign.lab_id)) {
+                    assignments.push(assign);
+                }
+            }
+        }
 
         if (assignments.length === 0) {
             labContainer.innerHTML = `<p style="color:#6b7280; margin-top:20px;">No experiments found for your class. Please contact your faculty.</p>`;

@@ -415,29 +415,45 @@
               const assignQ = query(collection(db, "assignments"), where("lab_id", "==", labId));
               const assignSnap = await getDocs(assignQ);
 
-              for (const aDoc of assignSnap.docs) {
+              // Use blocks of promises for better reliability
+              const assignmentDeletionPromises = assignSnap.docs.map(async (aDoc) => {
                 const aid = aDoc.id;
+                
                 // 2. Delete submissions for each assignment
                 const subQ = query(collection(db, "submissions"), where("assignmentId", "==", aid));
                 const subSnap = await getDocs(subQ);
-                for (const sDoc of subSnap.docs) {
+                
+                const submissionDeletionPromises = subSnap.docs.map(async (sDoc) => {
                   const sData = sDoc.data();
-                  // Delete central submission
-                  await deleteDoc(doc(db, "submissions", sDoc.id));
-                  // Delete student's copy if studentId exists
+                  const subId = sDoc.id;
+                  
+                  const individualDeletes = [deleteDoc(doc(db, "submissions", subId))];
+                  
                   if (sData.studentId) {
-                    try { await deleteDoc(doc(db, "users", sData.studentId, "submissions", aid)); } catch (e) { }
+                    individualDeletes.push(
+                      deleteDoc(doc(db, "users", sData.studentId, "submissions", aid)).catch(err => {
+                        console.warn(`Could not delete student's copy of submission ${aid} for ${sData.studentId}:`, err);
+                      })
+                    );
                   }
-                }
+                  return Promise.all(individualDeletes);
+                });
+
+                await Promise.all(submissionDeletionPromises);
+                
                 // 3. Delete assignment itself
-                await deleteDoc(doc(db, "assignments", aid));
-              }
+                return deleteDoc(doc(db, "assignments", aid));
+              });
+
+              await Promise.all(assignmentDeletionPromises);
 
               // 4. Delete Lab
               await deleteDoc(doc(db, "labs", labId));
+              
               loadLabs();
-              alert("Lab and all its related data deleted.");
+              alert("Lab and all its related data deleted successfully.");
             } catch (error) {
+              console.error("Error deleting lab:", error);
               alert("Error deleting lab: " + error.message);
             }
           }

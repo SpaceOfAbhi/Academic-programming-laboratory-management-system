@@ -232,20 +232,29 @@ async function loadExperiments() {
                             // 1. Delete all submissions for this assignment
                             const subQ = query(collection(db, "submissions"), where("assignmentId", "==", assignId));
                             const subSnap = await getDocs(subQ);
-                            for (const sDoc of subSnap.docs) {
+                            
+                            const submissionDeletionPromises = subSnap.docs.map(async (sDoc) => {
                                 const sData = sDoc.data();
-                                // Delete central
-                                await deleteDoc(doc(db, "submissions", sDoc.id));
-                                // Delete student's copy
+                                const subId = sDoc.id;
+                                
+                                const individualDeletes = [deleteDoc(doc(db, "submissions", subId))];
+                                
                                 if (sData.studentId) {
-                                    try { await deleteDoc(doc(db, "users", sData.studentId, "submissions", assignId)); } catch(_) {}
+                                    individualDeletes.push(
+                                        deleteDoc(doc(db, "users", sData.studentId, "submissions", assignId)).catch(err => {
+                                            console.warn(`Could not delete student copy:`, err);
+                                        })
+                                    );
                                 }
-                            }
+                                return Promise.all(individualDeletes);
+                            });
+
+                            await Promise.all(submissionDeletionPromises);
 
                             // 2. Delete Assignment itself
                             await deleteDoc(doc(db, "assignments", assignId));
                             
-                            alert("Experiment and submissions deleted.");
+                            alert("Experiment and submissions deleted definitively.");
                             loadExperiments();
                         } catch(err) {
                             alert("Error: " + err.message);
