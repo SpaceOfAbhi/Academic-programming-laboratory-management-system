@@ -2,7 +2,7 @@
 
 ![Logo](https://img.shields.io/badge/APLMS-v1.0.0-blue)
 
-APLMS is a comprehensive web-based platform designed to streamline academic programming laboratory sessions. It provides an integrated environment for students to code, submit assignments, and for faculty to evaluate and manage student performance efficiently.
+APLMS is a comprehensive web-based platform designed to streamline academic programming laboratory sessions. It provides an integrated environment for students to code, submit assignments, and for faculty to evaluate and manage student performance efficiently maintaining integrity.
 
 ## 🚀 Key Features
 
